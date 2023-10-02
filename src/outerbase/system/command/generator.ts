@@ -446,7 +446,7 @@ const buildCommand = async (basename: string, envConfig: EnvConfig) => {
 
   if (commandDefinition.id !== basename)
     throw new Error(
-      `A command directory should be the same as its ID.\nGotten ID: ${commandDefinition.id}, directory: ${basename}`
+      `A command's basename should be the same as its ID.\nGotten ID: ${commandDefinition.id}, directory: ${basename}. Change 'CommandDefinition.id' or rename the directory.`
     )
 
   const nodeSrcStrings = await Promise.all(

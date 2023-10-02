@@ -9,7 +9,7 @@ import { ProfientaCommandsInterface } from "@/outerbase/commands/shared"
 export const TestCommand = defineCommand({
   interface: ProfientaCommandsInterface,
   namespace: "test",
-  id: "test.example",
+  id: "test.exampe",
   name: "Test Functionalities",
   path: "/test/command",
   method: "GET",
