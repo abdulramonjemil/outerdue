@@ -8,7 +8,12 @@ import { pathToFileURL } from "url"
 
 import typescript from "rollup-plugin-typescript2"
 import nodeResolve from "@rollup/plugin-node-resolve"
+import CleanCSS from "clean-css"
 import { format } from "prettier"
+// @ts-expect-error Rollup processes this file successfully, so it's fine to
+// ignore typescript's error of the file being a commonJS module and terser
+// being an ES module
+import { minify } from "terser"
 import { RAW_STRING_STYLE_SHEET_PLACEHOLDER } from "./base"
 
 // Current working directory should be the project's root directory
@@ -57,7 +62,8 @@ const getBuildOptions = () => {
     .filter((arg) => arg.startsWith("--plugin="))
     .map((arg) => arg.substring("--plugin=".length))
 
-  return { pluginBasenames }
+  const minifyOutput = options.includes("--minify")
+  return { pluginBasenames, minifyOutput }
 }
 
 const getPluginSrcString = async (basename: string) => {
@@ -104,9 +110,14 @@ const getPluginStyles = async (basename: string, srcString: string) => {
     "utf-8"
   )
 
-  return (
-    await postcss([tailwindcss(tailwindConfig)]).process(pluginStyleSheet)
-  ).css
+  let { css } = await postcss([tailwindcss(tailwindConfig)]).process(
+    pluginStyleSheet
+  )
+
+  const { minifyOutput } = getBuildOptions()
+  if (minifyOutput) css = new CleanCSS().minify(css).styles
+
+  return css
 }
 
 const insertOutputStyleSheet = (pluginSrc: string, styleSheet: string) => {
@@ -139,16 +150,31 @@ const insertOutputStyleSheet = (pluginSrc: string, styleSheet: string) => {
 }
 
 const writePluginToFile = async (basename: string, src: string) => {
-  const PLUGIN_OUTPUT_FILE_EXTENSION = ".bundle.js"
+  const { minifyOutput } = getBuildOptions()
+  const outputFileExtension = minifyOutput ? ".bundle.min.js" : ".bundle.js"
 
-  const prettifiedSource = await format(src, { parser: "babel" })
   const filePathToWrite = path.join(
     PLUGINS_OUTPUT_DIR,
-    `${basename}${PLUGIN_OUTPUT_FILE_EXTENSION}`
+    `${basename}${outputFileExtension}`
   )
 
   await fs.promises.mkdir(PLUGINS_OUTPUT_DIR, { recursive: true })
-  await fs.promises.writeFile(filePathToWrite, prettifiedSource)
+  await fs.promises.writeFile(filePathToWrite, src)
+}
+
+const finalizePluginSrc = async (srcString: string) => {
+  const { minifyOutput } = getBuildOptions()
+
+  if (!minifyOutput) {
+    const prettifiedSource = await format(srcString, {
+      parser: "babel"
+    })
+
+    return prettifiedSource
+  }
+
+  const minifiedSource = (await minify(srcString)).code
+  return minifiedSource ?? ""
 }
 
 const buildPlugin = async (basename: string) => {
@@ -158,7 +184,8 @@ const buildPlugin = async (basename: string) => {
   const styleSheet = await getPluginStyles(basename, srcString)
 
   const srcWithStyleSheet = insertOutputStyleSheet(srcString, styleSheet)
-  await writePluginToFile(basename, srcWithStyleSheet)
+  const finalSource = await finalizePluginSrc(srcWithStyleSheet)
+  await writePluginToFile(basename, finalSource)
 }
 
 const initializePluginBuildProcess = async () => {
