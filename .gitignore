@@ -39,4 +39,5 @@ next-env.d.ts
 /.rollup.cache
 
 # Generated for outerbase
-/outerbase
+/outerbase/**/*
+!/outerbase/README.md
