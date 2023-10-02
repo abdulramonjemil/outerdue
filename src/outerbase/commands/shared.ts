@@ -1,4 +1,4 @@
-import { defineCommandsInterface } from "@/outerbase/controller/command/shared"
+import { defineCommandsInterface } from "@/outerbase/system/command/shared"
 
 export const ProfientaCommandsInterface = defineCommandsInterface({
   origin: "https://tired-violet.cmd.outerbase.io",

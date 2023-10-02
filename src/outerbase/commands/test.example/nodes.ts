@@ -2,7 +2,7 @@ import {
   JSNodeHandler,
   SQLNodeHandlerDefiner,
   sql
-} from "@/outerbase/controller/command/server"
+} from "@/outerbase/system/command/server"
 import { type TestCommand } from "./base"
 
 export const NODE_ONE: JSNodeHandler<typeof TestCommand, 0> = ({

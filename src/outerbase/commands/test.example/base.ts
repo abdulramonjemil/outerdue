@@ -2,7 +2,7 @@ import { $$type } from "@/lib/types"
 import {
   JSNodeHandlerResult,
   defineCommand
-} from "@/outerbase/controller/command/shared"
+} from "@/outerbase/system/command/shared"
 
 import { ProfientaCommandsInterface } from "@/outerbase/commands/shared"
 

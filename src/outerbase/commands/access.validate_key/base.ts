@@ -1,7 +1,7 @@
 import {
   JSNodeHandlerSuccessResult,
   defineCommand
-} from "@/outerbase/controller/command/shared"
+} from "@/outerbase/system/command/shared"
 import { ProfientaCommandsInterface } from "@/outerbase/commands/shared"
 import { $$type } from "@/lib/types"
 

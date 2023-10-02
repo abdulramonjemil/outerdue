@@ -29,7 +29,7 @@ const COMMANDS_OUTPUT_DIR = path.join(
 
 const COMMANDS_PROXY_PATH = path.join(
   process.cwd(),
-  "src/outerbase/controller/command/proxy.ts"
+  "src/outerbase/system/command/proxy.ts"
 )
 
 const COMMAND_FILE_CONVENTIONS = {
@@ -298,15 +298,8 @@ const writeNodeToFile = async ({
   const outputDir = path.join(COMMANDS_OUTPUT_DIR, commandBasename)
   const filePathToWrite = path.join(outputDir, filename)
 
-  return new Promise((resolve, reject) => {
-    fs.mkdir(outputDir, { recursive: true }, (mkdirError) => {
-      if (mkdirError) reject(mkdirError)
-      fs.writeFile(filePathToWrite, srcString, (writeError) => {
-        if (writeError) reject(writeError)
-        else resolve(undefined)
-      })
-    })
-  })
+  await fs.promises.mkdir(outputDir, { recursive: true })
+  await fs.promises.writeFile(filePathToWrite, srcString)
 }
 
 const getSQLNodeSrcString = async ({
@@ -424,11 +417,8 @@ const writeNodeConfigToFile = async (
   commandDefinition: CommandDef
 ) => {
   const { OUTPUT_JSON_CONFIG_FILE } = COMMAND_FILE_CONVENTIONS
-  const outputFile = path.join(
-    COMMANDS_OUTPUT_DIR,
-    commandBasename,
-    OUTPUT_JSON_CONFIG_FILE
-  )
+  const outputDir = path.join(COMMANDS_OUTPUT_DIR, commandBasename)
+  const outputFile = path.join(outputDir, OUTPUT_JSON_CONFIG_FILE)
   const content = {
     name: commandDefinition.name,
     method: commandDefinition.method,
@@ -442,6 +432,7 @@ const writeNodeConfigToFile = async (
     }))
   }
 
+  await fs.promises.mkdir(outputDir, { recursive: true })
   await fs.promises.writeFile(
     outputFile,
     `${JSON.stringify(content, null, 2)}\n`

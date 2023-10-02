@@ -6,7 +6,6 @@ import tailwindcss, { type Config as TailwindConfig } from "tailwindcss"
 import { rollup } from "rollup"
 import { pathToFileURL } from "url"
 
-// import typescript from "@rollup/plugin-typescript"
 import typescript from "rollup-plugin-typescript2"
 import nodeResolve from "@rollup/plugin-node-resolve"
 import { format } from "prettier"
@@ -31,7 +30,25 @@ const PLUGINS_OUTPUT_DIR = path.join(
 
 const logError = (...message: unknown[]) => {
   // eslint-disable-next-line no-console
-  console.error("---> Outerbase Plugin Generator Error:", ...message)
+  console.error(
+    "---> Outerbase Plugin Generator Error:",
+    "\n\n",
+    "Plain error:",
+    ...message,
+    "\n\n",
+    "Error as string:",
+    ...message.map((val) => String(val))
+  )
+}
+
+const RollupTSPluginOptions: Parameters<typeof typescript>[0] = {
+  check: false,
+  clean: true,
+  tsconfigOverride: {
+    compilerOptions: {
+      module: "esnext"
+    }
+  }
 }
 
 const getBuildOptions = () => {
@@ -52,7 +69,7 @@ const getPluginSrcString = async (basename: string) => {
 
   const bundle = await rollup({
     input: entryFile,
-    plugins: [typescript({ check: false }), nodeResolve()]
+    plugins: [typescript(RollupTSPluginOptions), nodeResolve()]
   })
 
   const code = await bundle.generate({}).then((output) => output.output[0].code)
@@ -130,12 +147,8 @@ const writePluginToFile = async (basename: string, src: string) => {
     `${basename}${PLUGIN_OUTPUT_FILE_EXTENSION}`
   )
 
-  return new Promise((resolve, reject) => {
-    fs.writeFile(filePathToWrite, prettifiedSource, (error) => {
-      if (error) reject(error)
-      else resolve(undefined)
-    })
-  })
+  await fs.promises.mkdir(PLUGINS_OUTPUT_DIR, { recursive: true })
+  await fs.promises.writeFile(filePathToWrite, prettifiedSource)
 }
 
 const buildPlugin = async (basename: string) => {
