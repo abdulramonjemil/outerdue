@@ -1,5 +1,5 @@
 import {
-  JSNodeHandlerSuccessResult,
+  JSNodeHandlerDefinedSuccessResult,
   defineCommand
 } from "@/outerbase/system/command/shared"
 import { SampleCommandsInterface } from "@/outerbase/commands/shared"
@@ -45,7 +45,8 @@ export const KeyValidationCommand = defineCommand({
     {
       type: "js",
       name: "Validate Key",
-      resultType: $$type<JSNodeHandlerSuccessResult<KeyValidationResult>>()
+      resultType:
+        $$type<JSNodeHandlerDefinedSuccessResult<KeyValidationResult>>()
     }
   ]
 })

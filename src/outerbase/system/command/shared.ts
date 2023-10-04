@@ -34,24 +34,33 @@ type SQLNodeHandlerReturnRow = JSONObject & {
   __cmd_type__?: never
 }
 
-export type SQLNodeHandlerResult<
+export type SQLNodeHandlerDefinedResult<
   Items extends SQLNodeHandlerReturnRow[] = SQLNodeHandlerReturnRow[]
 > = Items
 
-export interface JSNodeHandlerSuccessResult<
+export interface JSNodeHandlerDefinedSuccessResult<
   Data extends JSONObject = JSONObject
 > {
   data: Data
   __cmd_type__: "js_node_success_result"
 }
 
-export interface JSNodeHandlerErrorResult<ErrorCode extends string = string> {
+export interface JSNodeHandlerDefinedErrorResult<
+  ErrorCode extends string = string
+> {
   __cmd_type__: "js_node_error_result"
   errors: {
     code: ErrorCode
     message: string
   }[]
 }
+
+export type JSNodeHandlerDefinedResult<
+  SuccessData extends JSONObject = JSONObject,
+  ErrorCode extends string = string
+> =
+  | JSNodeHandlerDefinedSuccessResult<SuccessData>
+  | JSNodeHandlerDefinedErrorResult<ErrorCode>
 
 export type NodeProxyErrorCode =
   | "__PROXY_INVALID_BODY_OR_QUERY__"
@@ -74,7 +83,7 @@ export type SQLNodeProxyResult = OuterbaseSQLSuccessResult<
 
 export type NodeProxyResult = JSNodeProxyResult | SQLNodeProxyResult
 
-export type NodeHandlerProblemResult<CmdDef extends CommandDef> =
+type UnwrappedNodeProblemResult<CmdDef extends CommandDef> =
   CmdDef["problems"] extends []
     ? never
     : {
@@ -85,35 +94,31 @@ export type NodeHandlerProblemResult<CmdDef extends CommandDef> =
         }
       }
 
+export type JSNodeHandlerProblemResult<CmdDef extends CommandDef> =
+  UnwrappedNodeProblemResult<CmdDef>
+
 export type JSNodeProblemResult<CmdDef extends CommandDef> =
-  NodeHandlerProblemResult<CmdDef>
+  UnwrappedNodeProblemResult<CmdDef>
 
 export type SQLNodeProblemResult<CmdDef extends CommandDef> =
-  NodeHandlerProblemResult<CmdDef> extends never
+  UnwrappedNodeProblemResult<CmdDef> extends never
     ? never
-    : OuterbaseSQLSuccessResult<[NodeHandlerProblemResult<CmdDef>]>
+    : OuterbaseSQLSuccessResult<[UnwrappedNodeProblemResult<CmdDef>]>
 
 export type NodeProblemResult<CmdDef extends CommandDef> =
   | JSNodeProblemResult<CmdDef>
   | SQLNodeProblemResult<CmdDef>
 
-export type JSNodeHandlerResult<
-  SuccessData extends JSONObject = JSONObject,
-  ErrorCode extends string = string
-> =
-  | JSNodeHandlerSuccessResult<SuccessData>
-  | JSNodeHandlerErrorResult<ErrorCode>
-
-export type HandlerResultToNodeResult<
+export type HandlerDefinedResultToNodeResult<
   CmdDef extends CommandDef,
-  Result extends JSNodeHandlerResult | SQLNodeHandlerResult
-> = Result extends SQLNodeHandlerResult
+  Result extends JSNodeHandlerDefinedResult | SQLNodeHandlerDefinedResult
+> = Result extends SQLNodeHandlerDefinedResult
   ?
       | OuterbaseSQLSuccessResult<Result>
       | OuterbaseSQLErrorResult
       | SQLNodeProxyResult
       | SQLNodeProblemResult<CmdDef>
-  : Result extends JSNodeHandlerResult
+  : Result extends JSNodeHandlerDefinedResult
   ? Result | JSNodeProxyResult | JSNodeProblemResult<CmdDef>
   : never
 
@@ -135,13 +140,13 @@ export interface JSNodeConfig {
   name: string
   type: "js"
   isAsync?: boolean
-  resultType: $$type<JSNodeHandlerResult>
+  resultType: $$type<JSNodeHandlerDefinedResult>
 }
 
 export interface SQLNodeConfig {
   name: string
   type: "sql"
-  resultType: $$type<SQLNodeHandlerResult>
+  resultType: $$type<SQLNodeHandlerDefinedResult>
 }
 
 // This is meant to be a union of command layouts. Each layout is a tuple.
@@ -177,11 +182,11 @@ export interface RawCommandNodeSchema<
       NodeIndex
     > extends infer T1 extends CmdDef["nodes"][number][]
       ? TupleObjectsMap<T1, "resultType"> extends infer T2 extends (
-          | $$type<JSNodeHandlerResult>
-          | $$type<SQLNodeHandlerResult>
+          | $$type<JSNodeHandlerDefinedResult>
+          | $$type<SQLNodeHandlerDefinedResult>
         )[]
         ? {
-            [K in keyof T2]: HandlerResultToNodeResult<
+            [K in keyof T2]: HandlerDefinedResultToNodeResult<
               CmdDef,
               Extract$$type<T2[K]>
             >

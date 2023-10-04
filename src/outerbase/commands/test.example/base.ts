@@ -1,6 +1,6 @@
 import { $$type } from "@/lib/types"
 import {
-  JSNodeHandlerResult,
+  JSNodeHandlerDefinedResult,
   defineCommand
 } from "@/outerbase/system/command/shared"
 
@@ -27,7 +27,7 @@ export const TestCommand = defineCommand({
     {
       name: "Construct query",
       type: "js",
-      resultType: $$type<JSNodeHandlerResult>()
+      resultType: $$type<JSNodeHandlerDefinedResult>()
     },
     {
       name: "Run query",
@@ -37,7 +37,7 @@ export const TestCommand = defineCommand({
     {
       name: "Finalize result",
       type: "js",
-      resultType: $$type<JSNodeHandlerResult>()
+      resultType: $$type<JSNodeHandlerDefinedResult>()
     }
   ]
 })

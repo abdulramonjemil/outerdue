@@ -3,9 +3,9 @@ import type { GuardedType, JSONValue } from "@/lib/types"
 
 import { type CommandEndpointResult } from "./client"
 import {
-  JSNodeHandlerResult,
+  JSNodeHandlerDefinedResult,
   NodeProxyErrorCode,
-  HandlerResultToNodeResult,
+  HandlerDefinedResultToNodeResult,
   tryCommandResultJSONParse,
   CommandDef,
   JSNodeProxyResult,
@@ -210,7 +210,7 @@ export function JSNodeProxy({
   nodeIndex: number
   commandDefinition: CommandDef
 }):
-  | HandlerResultToNodeResult<CommandDef, JSNodeHandlerResult>
+  | HandlerDefinedResultToNodeResult<CommandDef, JSNodeHandlerDefinedResult>
   | JSNodeHandlerReturn<CommandDef, number> {
   const paramValidationInfo = getParamValidationInfo(commandDefinition)
 

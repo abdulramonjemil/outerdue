@@ -3,11 +3,11 @@ import { LastItem } from "@/lib/types"
 import {
   CommandDef,
   RawCommandNodeSchema,
-  JSNodeHandlerResult,
+  JSNodeHandlerDefinedResult,
   NodeProxyResult,
-  SQLNodeHandlerResult,
+  SQLNodeHandlerDefinedResult,
   NodeProblemResult,
-  NodeHandlerProblemResult
+  JSNodeHandlerProblemResult
 } from "./shared"
 
 type JSNodeHandlerArgs<
@@ -25,11 +25,11 @@ export type JSNodeHandlerReturn<
   NodeIndex extends number
 > = RawCommandNodeSchema<CmdDef, NodeIndex>["result"] extends infer T extends
   RawCommandNodeSchema<CmdDef, NodeIndex>["result"]
-  ? [T] extends [JSNodeHandlerResult]
+  ? [T] extends [JSNodeHandlerDefinedResult]
     ? CmdDef["nodes"][NodeIndex] extends { type: "js" }
       ? CmdDef["nodes"][NodeIndex]["isAsync"] extends true
-        ? Promise<T | NodeHandlerProblemResult<CmdDef>>
-        : T | NodeHandlerProblemResult<CmdDef>
+        ? Promise<T | JSNodeHandlerProblemResult<CmdDef>>
+        : T | JSNodeHandlerProblemResult<CmdDef>
       : never
     : never
   : never
@@ -46,7 +46,9 @@ export type JSNodeHandler<
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const $$__type_only__SQL_NODE_RESULT = Symbol("$$SQL_NODE_RESULT")
 
-type MaskedSQLNodeResult<Result extends SQLNodeHandlerResult> = string & {
+type MaskedSQLNodeHandlerDefinedResult<
+  Result extends SQLNodeHandlerDefinedResult
+> = string & {
   [$$__type_only__SQL_NODE_RESULT]: Result
 }
 
@@ -63,8 +65,8 @@ export type SQLNodeHandlerDefiner<
   NodeIndex extends number
 > = RawCommandNodeSchema<CmdDef, NodeIndex>["result"] extends infer T extends
   RawCommandNodeSchema<CmdDef, NodeIndex>["result"]
-  ? [T] extends [SQLNodeHandlerResult]
-    ? (...args: SQLNodeHandlerParams) => MaskedSQLNodeResult<T>
+  ? [T] extends [SQLNodeHandlerDefinedResult]
+    ? (...args: SQLNodeHandlerParams) => MaskedSQLNodeHandlerDefinedResult<T>
     : never
   : never
 
@@ -83,18 +85,6 @@ export type SQLNodeHandlerParam<
     >
   : never
 
-/**
- * SQL nodes defined using this function must define a function named
- * `pg_temp.handle_outerbase_command` using the following syntax:
- *
- * ```sql
- * CREATE OR REPLACE FUNCTION pg_temp.handle_outerbase_command(...)
- * ```
- *
- * Only this way does the string count as a valid SQL node. The function is
- * called by the SQL node proxy conditionally (when there's no previous detected
- * errors).
- */
-export const sql = <Result extends SQLNodeHandlerResult>(
+export const sql = <Result extends SQLNodeHandlerDefinedResult>(
   ...args: Parameters<typeof String.raw>
-) => String.raw(...args) as MaskedSQLNodeResult<Result>
+) => String.raw(...args) as MaskedSQLNodeHandlerDefinedResult<Result>

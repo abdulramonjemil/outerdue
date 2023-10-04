@@ -8,9 +8,9 @@ import {
   BaseQueryType,
   CommandDef,
   RawCommandNodeSchema,
-  JSNodeHandlerResult,
-  HandlerResultToNodeResult,
-  SQLNodeHandlerResult,
+  JSNodeHandlerDefinedResult,
+  HandlerDefinedResultToNodeResult,
+  SQLNodeHandlerDefinedResult,
   parseCommandResultJSON
 } from "./shared"
 
@@ -21,8 +21,8 @@ import {
  */
 type CommandEndpointRequestInit = Omit<RequestInit, "method" | "body">
 export type CommandEndpointResult =
-  | HandlerResultToNodeResult<CommandDef, JSNodeHandlerResult>
-  | HandlerResultToNodeResult<CommandDef, SQLNodeHandlerResult>
+  | HandlerDefinedResultToNodeResult<CommandDef, JSNodeHandlerDefinedResult>
+  | HandlerDefinedResultToNodeResult<CommandDef, SQLNodeHandlerDefinedResult>
 
 class TypedResponse<T extends CommandEndpointResult> extends Response {
   async json(): Promise<T> {
@@ -122,14 +122,14 @@ export class CommandEndpoint<CmdDef extends CommandDef> {
     }
 
     return fetchTypedResponse<
-      HandlerResultToNodeResult<
+      HandlerDefinedResultToNodeResult<
         CmdDef,
         RawCommandNodeSchema<
           CmdDef,
           // Use the result of the last node as endpoint result
           LastItem<NonNegativeRangeList<CmdDef["nodes"]["length"]>>
         >["result"] extends infer T
-          ? T extends JSNodeHandlerResult | SQLNodeHandlerResult
+          ? T extends JSNodeHandlerDefinedResult | SQLNodeHandlerDefinedResult
             ? T
             : never
           : never
