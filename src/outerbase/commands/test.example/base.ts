@@ -2,7 +2,7 @@ import { $$type } from "@/lib/types"
 import {
   JSNodeHandlerDefinedResult,
   defineCommand
-} from "@/outerbase/system/command/shared"
+} from "@/outerbase/system/command"
 
 import { SampleCommandsInterface } from "@/outerbase/commands/shared"
 

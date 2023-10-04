@@ -1,16 +1,13 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable max-classes-per-file */
 
-import { GuardedType, NonNegativeRangeList, LastItem } from "@/lib/types"
+import { GuardedType, LastItem, Extract$$type } from "@/lib/types"
 
 import {
   BaseBodyType,
   BaseQueryType,
   CommandDef,
-  RawCommandNodeSchema,
-  JSNodeHandlerDefinedResult,
   HandlerDefinedResultToNodeResult,
-  SQLNodeHandlerDefinedResult,
   parseCommandResultJSON
 } from "./shared"
 
@@ -20,22 +17,27 @@ import {
  * - Body is conditionally required/suppliable depending on the method.
  */
 type CommandEndpointRequestInit = Omit<RequestInit, "method" | "body">
-export type CommandEndpointResult =
-  | HandlerDefinedResultToNodeResult<CommandDef, JSNodeHandlerDefinedResult>
-  | HandlerDefinedResultToNodeResult<CommandDef, SQLNodeHandlerDefinedResult>
 
-class TypedResponse<T extends CommandEndpointResult> extends Response {
+export type CommandEndpointResult<CmdDef extends CommandDef = CommandDef> =
+  HandlerDefinedResultToNodeResult<
+    CmdDef,
+    Extract$$type<LastItem<CmdDef["nodes"]>["resultType"]>
+  >
+
+class CommandEndpointResponse<
+  T extends CommandEndpointResult
+> extends Response {
   async json(): Promise<T> {
     const resultText = await this.text()
     return parseCommandResultJSON(resultText) as T
   }
 }
 
-export async function fetchTypedResponse<T extends CommandEndpointResult>(
+async function fetchCommandEndpointResponse<T extends CommandEndpointResult>(
   ...fetchParams: Parameters<typeof fetch>
-): Promise<TypedResponse<T>> {
+): Promise<CommandEndpointResponse<T>> {
   const response = await fetch(...fetchParams)
-  return new TypedResponse<T>(response.body, response)
+  return new CommandEndpointResponse<T>(response.body, response)
 }
 
 type CommandFetchHeadersParam<CmdDef extends CommandDef> =
@@ -121,18 +123,10 @@ export class CommandEndpoint<CmdDef extends CommandDef> {
       }
     }
 
-    return fetchTypedResponse<
+    return fetchCommandEndpointResponse<
       HandlerDefinedResultToNodeResult<
         CmdDef,
-        RawCommandNodeSchema<
-          CmdDef,
-          // Use the result of the last node as endpoint result
-          LastItem<NonNegativeRangeList<CmdDef["nodes"]["length"]>>
-        >["result"] extends infer T
-          ? T extends JSNodeHandlerDefinedResult | SQLNodeHandlerDefinedResult
-            ? T
-            : never
-          : never
+        Extract$$type<LastItem<CmdDef["nodes"]>["resultType"]>
       >
     >(endpointURL, init)
   }

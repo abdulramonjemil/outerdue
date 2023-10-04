@@ -1,4 +1,4 @@
-import { CommandEndpoint } from "@/outerbase/system/command/client"
+import { CommandEndpoint } from "@/outerbase/system/command"
 import { KeyValidationCommand } from "./access.validate_key/base"
 
 /**
