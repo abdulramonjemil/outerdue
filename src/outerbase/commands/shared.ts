@@ -1,6 +1,6 @@
-import { defineCommandsInterface } from "@/outerbase/system/command"
+import { defineCommandInterface } from "@/outerbase/system/command"
 
-export const SampleCommandsInterface = defineCommandsInterface({
+export const SampleCommandInterface = defineCommandInterface({
   origin: "https://tired-violet.cmd.outerbase.io",
   prefix: null,
   namespaces: ["access", "test"],

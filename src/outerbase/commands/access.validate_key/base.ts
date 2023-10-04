@@ -2,7 +2,7 @@ import {
   JSNodeHandlerDefinedSuccessResult,
   defineCommand
 } from "@/outerbase/system/command"
-import { SampleCommandsInterface } from "@/outerbase/commands/shared"
+import { SampleCommandInterface } from "@/outerbase/commands/shared"
 import { $$type } from "@/lib/types"
 
 /**
@@ -32,7 +32,7 @@ const isValidKeyValidationPayload = (
 }
 
 export const KeyValidationCommand = defineCommand({
-  interface: SampleCommandsInterface,
+  interface: SampleCommandInterface,
   method: "POST",
   namespace: "access",
   name: "Validate Access Key",

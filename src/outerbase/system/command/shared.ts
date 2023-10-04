@@ -124,7 +124,7 @@ export type HandlerDefinedResultToNodeResult<
 
 type CommandMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
 
-export const defineCommandsInterface = <
+export const defineCommandInterface = <
   Origin extends string,
   Prefix extends string | null,
   Methods extends CommandMethod[],
@@ -136,7 +136,7 @@ export const defineCommandsInterface = <
   namespaces: [...Namespaces]
 }) => config
 
-export type CommandsInterfaceDef = ReturnType<typeof defineCommandsInterface>
+export type CommandInterfaceDef = ReturnType<typeof defineCommandInterface>
 
 export interface JSNodeConfig {
   name: string
@@ -226,7 +226,7 @@ type CommandQueryParamsConfig<
  * - Commands Client
  */
 export const defineCommand = <
-  InterfaceDef extends CommandsInterfaceDef,
+  InterfaceDef extends CommandInterfaceDef,
   Namespace extends InterfaceDef["namespaces"][number],
   NodesConfig extends CommandNodesConfig,
   Path extends `/${Namespace}` | `/${Namespace}/${string}`,

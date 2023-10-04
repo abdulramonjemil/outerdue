@@ -4,10 +4,10 @@ import {
   defineCommand
 } from "@/outerbase/system/command"
 
-import { SampleCommandsInterface } from "@/outerbase/commands/shared"
+import { SampleCommandInterface } from "@/outerbase/commands/shared"
 
 export const TestCommand = defineCommand({
-  interface: SampleCommandsInterface,
+  interface: SampleCommandInterface,
   namespace: "test",
   id: "test.example",
   name: "Test Functionalities",
