@@ -4,10 +4,10 @@ import {
   defineCommand
 } from "@/outerbase/system/command/shared"
 
-import { ProfientaCommandsInterface } from "@/outerbase/commands/shared"
+import { SampleCommandsInterface } from "@/outerbase/commands/shared"
 
 export const TestCommand = defineCommand({
-  interface: ProfientaCommandsInterface,
+  interface: SampleCommandsInterface,
   namespace: "test",
   id: "test.example",
   name: "Test Functionalities",

@@ -2,7 +2,7 @@ import {
   JSNodeHandlerSuccessResult,
   defineCommand
 } from "@/outerbase/system/command/shared"
-import { ProfientaCommandsInterface } from "@/outerbase/commands/shared"
+import { SampleCommandsInterface } from "@/outerbase/commands/shared"
 import { $$type } from "@/lib/types"
 
 /**
@@ -32,7 +32,7 @@ const isValidKeyValidationPayload = (
 }
 
 export const KeyValidationCommand = defineCommand({
-  interface: ProfientaCommandsInterface,
+  interface: SampleCommandsInterface,
   method: "POST",
   namespace: "access",
   name: "Validate Access Key",
