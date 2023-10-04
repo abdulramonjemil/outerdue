@@ -126,10 +126,12 @@ type CommandMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
 
 export const defineCommandsInterface = <
   Origin extends string,
+  Prefix extends string | null,
   Methods extends CommandMethod[],
   Namespaces extends string[]
 >(config: {
   origin: Origin
+  prefix: Prefix
   methods: [...Methods]
   namespaces: [...Namespaces]
 }) => config
@@ -199,12 +201,6 @@ export interface RawCommandNodeSchema<
   result: Extract$$type<CmdDef["nodes"][NodeIndex]["resultType"]>
 }
 
-type CommandID<Namespace extends CommandsInterfaceDef["namespaces"][number]> =
-  `${Namespace}.${string}`
-
-type CommandPath<Namespace extends CommandsInterfaceDef["namespaces"][number]> =
-  `/${Namespace}` | `/${Namespace}/${string}`
-
 export type BaseQueryType = Record<string, string>
 // To pass a string value as body, nest it in an object
 export type BaseBodyType = JSONObject
@@ -233,8 +229,10 @@ export const defineCommand = <
   InterfaceDef extends CommandsInterfaceDef,
   Namespace extends InterfaceDef["namespaces"][number],
   NodesConfig extends CommandNodesConfig,
-  Path extends CommandPath<Namespace>,
-  ID extends CommandID<Namespace>,
+  Path extends `/${Namespace}` | `/${Namespace}/${string}`,
+  ID extends `${InterfaceDef["prefix"] extends string
+    ? `${InterfaceDef["prefix"]}.`
+    : ""}${Namespace}.${string}`,
   Method extends InterfaceDef["methods"][number],
   // The boolean indicates whether the header is required or not
   Headers extends Record<string, boolean> | null,
