@@ -127,8 +127,8 @@ type CommandMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
 export const defineCommandInterface = <
   Origin extends string,
   Prefix extends string | null,
-  Methods extends CommandMethod[],
-  Namespaces extends string[]
+  Methods extends [CommandMethod, ...CommandMethod[]],
+  Namespaces extends [string, ...string[]]
 >(config: {
   origin: Origin
   prefix: Prefix
