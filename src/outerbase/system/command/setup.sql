@@ -1,10 +1,10 @@
 -- This file contains PostgreSQL code that should be run on the PostgreSQL DB
 -- using this system. It sets up the functions used in the SQL node proxy.
 
-CREATE SCHEMA IF NOT EXISTS cmd_proxy;
+CREATE SCHEMA IF NOT EXISTS cmd_utils;
 
-DROP FUNCTION IF EXISTS cmd_proxy.get_proxy_result;
-CREATE OR REPLACE FUNCTION cmd_proxy.get_proxy_result(node_result jsonb)
+DROP FUNCTION IF EXISTS cmd_utils.get_proxy_result;
+CREATE OR REPLACE FUNCTION cmd_utils.get_proxy_result(node_result jsonb)
 RETURNS table (__type__ text, error jsonb) AS $$
 BEGIN
   IF node_result->'payload'->>'__type__' = 'proxy_result' THEN
@@ -25,8 +25,8 @@ BEGIN
   END IF;
 END $$ LANGUAGE plpgsql;
 
-DROP FUNCTION IF EXISTS cmd_proxy.get_problem_result;
-CREATE OR REPLACE FUNCTION cmd_proxy.get_problem_result(node_result jsonb)
+DROP FUNCTION IF EXISTS cmd_utils.get_problem_result;
+CREATE OR REPLACE FUNCTION cmd_utils.get_problem_result(node_result jsonb)
 RETURNS table (__type__ text, error jsonb) AS $$
 BEGIN
   IF node_result->'payload'->>'__type__' = 'problem_result' THEN
@@ -47,8 +47,8 @@ BEGIN
   END IF;
 END $$ LANGUAGE plpgsql;
 
-DROP FUNCTION IF EXISTS cmd_proxy.is_proxy_result;
-CREATE OR REPLACE FUNCTION cmd_proxy.is_proxy_result(node_result jsonb)
+DROP FUNCTION IF EXISTS cmd_utils.is_proxy_result;
+CREATE OR REPLACE FUNCTION cmd_utils.is_proxy_result(node_result jsonb)
 RETURNS boolean AS $$
 BEGIN
   RETURN
@@ -58,8 +58,8 @@ BEGIN
     node_result->'response'->'items'->0->>'__type__' = 'proxy_result';
 END $$ LANGUAGE plpgsql;
 
-DROP FUNCTION IF EXISTS cmd_proxy.is_problem_result;
-CREATE OR REPLACE FUNCTION cmd_proxy.is_problem_result(node_result jsonb)
+DROP FUNCTION IF EXISTS cmd_utils.is_problem_result;
+CREATE OR REPLACE FUNCTION cmd_utils.is_problem_result(node_result jsonb)
 RETURNS boolean AS $$
 BEGIN
   RETURN

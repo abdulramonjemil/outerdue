@@ -326,13 +326,13 @@ RETURNS boolean AS $$ -- Returned boolean so SELECT ... INTO works
 BEGIN
   DROP TABLE IF EXISTS __cmd_current_node_result;
 
-  IF cmd_proxy.is_proxy_result(prev_node_result) THEN
+  IF cmd_utils.is_proxy_result(prev_node_result) THEN
     CREATE TEMP TABLE __cmd_current_node_result AS
-    SELECT * FROM cmd_proxy.get_proxy_result(prev_node_result);
+    SELECT * FROM cmd_utils.get_proxy_result(prev_node_result);
 
-  ELSIF cmd_proxy.is_problem_result(prev_node_result) THEN
+  ELSIF cmd_utils.is_problem_result(prev_node_result) THEN
     CREATE TEMP TABLE __cmd_current_node_result AS
-    SELECT * FROM cmd_proxy.get_problem_result(prev_node_result);
+    SELECT * FROM cmd_utils.get_problem_result(prev_node_result);
 
   ELSE CREATE TEMP TABLE __cmd_current_node_result AS
     SELECT * FROM pg_temp.${HANDLER_FUNCTION_NAME}(prev_node_result);
