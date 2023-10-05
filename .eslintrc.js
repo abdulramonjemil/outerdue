@@ -41,7 +41,7 @@ module.exports = {
     ],
 
     "no-restricted-syntax": "off",
-    "no-underscore-dangle": ["error", { allow: ["__cmd_type__"] }],
+    "no-underscore-dangle": ["error", { allow: ["__type__"] }],
     "arrow-parens": ["error", "always"],
     semi: ["error", "never"],
     quotes: ["error", "double"]

@@ -98,7 +98,7 @@ const getReturnProxyErrorResult = (
   source: "js",
   payload: {
     error: { code, message },
-    __cmd_type__: "node_proxy_result"
+    __type__: "proxy_result"
   }
 })
 
@@ -179,26 +179,26 @@ const getHeadersValidationInfo = (
 /* eslint-disable @typescript-eslint/no-unnecessary-condition, no-underscore-dangle */
 const isJSNodeProxyResult = (value: unknown): value is JSNodeProxyResult => {
   const val = value as JSNodeProxyResult
-  return val?.payload?.__cmd_type__ === "node_proxy_result"
+  return val?.payload?.__type__ === "proxy_result"
 }
 
 const isSQLNodeProxyResult = (value: unknown): value is SQLNodeProxyResult => {
   const val = value as SQLNodeProxyResult
-  return val?.response?.items?.[0]?.__cmd_type__ === "node_proxy_result"
+  return val?.response?.items?.[0]?.__type__ === "proxy_result"
 }
 
 const isJSNodeProblemResult = (
   value: unknown
 ): value is JSNodeProblemResult<CommandDef> => {
   const val = value as JSNodeProblemResult<CommandDef>
-  return val?.payload?.__cmd_type__ === "cmd_problem_result"
+  return val?.payload?.__type__ === "problem_result"
 }
 
 const isSQLNodeProblemResult = (
   value: unknown
 ): value is SQLNodeProblemResult<CommandDef> => {
   const val = value as SQLNodeProblemResult<CommandDef>
-  return val?.response?.items?.[0]?.__cmd_type__ === "cmd_problem_result"
+  return val?.response?.items?.[0]?.__type__ === "problem_result"
 }
 /* eslint-enable @typescript-eslint/no-unnecessary-condition, no-underscore-dangle */
 
@@ -223,7 +223,7 @@ export function JSNodeProxy({
 
   if (paramValidationInfo.status === "error") {
     return getReturnProxyErrorResult(
-      "__PROXY_INVALID_BODY_OR_QUERY__",
+      "PROXY_INVALID_BODY_OR_QUERY",
       `The request '${paramValidationInfo.paramType}' does not match the specified type`
     )
   }
@@ -232,7 +232,7 @@ export function JSNodeProxy({
 
   if (!headersValidationInfo.success) {
     return getReturnProxyErrorResult(
-      "__PROXY_MISSING_REQUIRED_HEADERS__",
+      "PROXY_MISSING_REQUIRED_HEADERS",
       `The following headers are missing: ${headersValidationInfo.missing.join(
         ", "
       )}`
@@ -246,7 +246,7 @@ export function JSNodeProxy({
 
   if (!prevNodeResultsData.success) {
     return getReturnProxyErrorResult(
-      "__PROXY_INTERNAL_PARSING_ERROR__",
+      "PROXY_INTERNAL_PARSING_ERROR",
       `Could not determine the result of nodes '${prevNodeResultsData.faultyNodesNames.join(
         ", "
       )}' inside node '${
@@ -283,7 +283,7 @@ export function JSNodeProxy({
       return {
         source: "js",
         payload: {
-          __cmd_type__: "cmd_problem_result",
+          __type__: "problem_result",
           error: {
             code: lastResult.response.items[0].error.code,
             message: lastResult.response.items[0].error.message

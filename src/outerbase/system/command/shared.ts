@@ -31,7 +31,7 @@ interface OuterbaseSQLSuccessResult<Items extends JSONObject[]> {
  * values of SQL nodes.
  */
 type SQLNodeHandlerReturnRow = JSONObject & {
-  __cmd_type__?: never
+  __type__?: undefined
 }
 
 export type SQLNodeHandlerDefinedResult<
@@ -52,7 +52,7 @@ export type JSNodeHandlerDefinedSuccessResult<
 > = JSNodeResult<{
   data: Data
   error?: undefined
-  __cmd_type__?: undefined
+  __type__?: undefined
 }>
 
 export type JSNodeHandlerDefinedErrorResult<ErrorCode extends string = string> =
@@ -62,7 +62,7 @@ export type JSNodeHandlerDefinedErrorResult<ErrorCode extends string = string> =
       message: string
     }
     data?: undefined
-    __cmd_type__?: undefined
+    __type__?: undefined
   }>
 
 export type JSNodeHandlerDefinedResult<
@@ -73,13 +73,13 @@ export type JSNodeHandlerDefinedResult<
   | JSNodeHandlerDefinedErrorResult<ErrorCode>
 
 export type NodeProxyErrorCode =
-  | "__PROXY_INVALID_BODY_OR_QUERY__"
-  | "__PROXY_INTERNAL_PARSING_ERROR__"
-  | "__PROXY_MISSING_REQUIRED_HEADERS__"
+  | "PROXY_INVALID_BODY_OR_QUERY"
+  | "PROXY_INTERNAL_PARSING_ERROR"
+  | "PROXY_MISSING_REQUIRED_HEADERS"
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type UnwrappedNodeProxyResult = {
-  __cmd_type__: "node_proxy_result"
+  __type__: "proxy_result"
   error: {
     code: NodeProxyErrorCode
     message: string
@@ -98,7 +98,7 @@ type UnwrappedNodeProblemResult<CmdDef extends CommandDef> =
   CmdDef["problems"] extends []
     ? never
     : {
-        __cmd_type__: "cmd_problem_result"
+        __type__: "problem_result"
         error: {
           code: CmdDef["problems"][number]
           message: string

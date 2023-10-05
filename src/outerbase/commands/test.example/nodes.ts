@@ -13,7 +13,7 @@ export const NODE_ONE: JSNodeHandler<typeof TestCommand, 0> = ({
     return {
       source: "js",
       payload: {
-        __cmd_type__: "cmd_problem_result",
+        __type__: "problem_result",
         error: {
           code: "DEFINED_PROBLEM",
           message: `Triggered. Headers: ${JSON.stringify(headers)}`
