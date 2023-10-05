@@ -176,33 +176,31 @@ const getHeadersValidationInfo = (
   return { success: true, empty: false, values: headersObject }
 }
 
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-underscore-dangle */
 const isJSNodeProxyResult = (value: unknown): value is JSNodeProxyResult => {
   const val = value as JSNodeProxyResult
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare, @typescript-eslint/no-unnecessary-condition, no-underscore-dangle
-  return val.payload?.__cmd_type__ === "node_proxy_result"
+  return val?.payload?.__cmd_type__ === "node_proxy_result"
 }
 
 const isSQLNodeProxyResult = (value: unknown): value is SQLNodeProxyResult => {
   const val = value as SQLNodeProxyResult
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare, @typescript-eslint/no-unnecessary-condition, no-underscore-dangle
-  return val.response?.items?.[0]?.__cmd_type__ === "node_proxy_result"
+  return val?.response?.items?.[0]?.__cmd_type__ === "node_proxy_result"
 }
 
 const isJSNodeProblemResult = (
   value: unknown
 ): value is JSNodeProblemResult<CommandDef> => {
   const val = value as JSNodeProblemResult<CommandDef>
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare, @typescript-eslint/no-unnecessary-condition, no-underscore-dangle
-  return val.payload?.__cmd_type__ === "cmd_problem_result"
+  return val?.payload?.__cmd_type__ === "cmd_problem_result"
 }
 
 const isSQLNodeProblemResult = (
   value: unknown
 ): value is SQLNodeProblemResult<CommandDef> => {
   const val = value as SQLNodeProblemResult<CommandDef>
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare, @typescript-eslint/no-unnecessary-condition, no-underscore-dangle
-  return val.response?.items?.[0]?.__cmd_type__ === "cmd_problem_result"
+  return val?.response?.items?.[0]?.__cmd_type__ === "cmd_problem_result"
 }
+/* eslint-enable @typescript-eslint/no-unnecessary-condition, no-underscore-dangle */
 
 type CommandDefWithJSNodeOnly = Omit<CommandDef, "nodes"> & {
   nodes: [JSNodeConfig]
