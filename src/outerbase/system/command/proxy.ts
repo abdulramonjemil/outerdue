@@ -10,8 +10,7 @@ import {
   SQLNodeProxyResult,
   JSNodeProblemResult,
   SQLNodeProblemResult,
-  JSNodeConfig,
-  NodeResult
+  JSNodeConfig
 } from "./shared"
 
 import { JSNodeHandlerReturn } from "./server"
@@ -201,10 +200,13 @@ const isSQLNodeProblemResult = (
   return val.response?.items?.[0]?.__cmd_type__ === "cmd_problem_result"
 }
 
-type GenericJSNodeResult = NodeResult<
-  Omit<CommandDef, "nodes"> & { nodes: [JSNodeConfig] },
-  0
->
+type CommandDefWithJSNodeOnly = Omit<CommandDef, "nodes"> & {
+  nodes: [JSNodeConfig]
+}
+
+type ProxyReturn =
+  | JSNodeProxyResult
+  | JSNodeHandlerReturn<CommandDefWithJSNodeOnly, 0>
 
 export function JSNodeProxy({
   nodeHandler,
@@ -214,7 +216,7 @@ export function JSNodeProxy({
   nodeHandler: (...args: unknown[]) => JSNodeHandlerReturn<CommandDef, number>
   nodeIndex: number
   commandDefinition: CommandDef
-}): GenericJSNodeResult | JSNodeHandlerReturn<CommandDef, number> {
+}): ProxyReturn {
   const paramValidationInfo = getParamValidationInfo(commandDefinition)
 
   if (paramValidationInfo.status === "error") {
