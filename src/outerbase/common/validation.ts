@@ -47,8 +47,8 @@ export async function validateKey<
       body: { key, scheme }
     })
 
-    if (keyValidationResult.__cmd_type__ === "js_node_success_result") {
-      if (keyValidationResult.data.isValid) return { status: "success" }
+    if (!keyValidationResult.payload.error) {
+      if (keyValidationResult.payload.data.isValid) return { status: "success" }
       return {
         status: "failed",
         error: {

@@ -12,7 +12,9 @@ export const NODE_ONE: JSNodeHandler<typeof KeyValidationCommand, 0> = ({
   ])
 
   return {
-    __cmd_type__: "js_node_success_result",
-    data: { key, scheme, isValid: key === schemeToKeysMap.get(scheme) }
+    source: "js",
+    payload: {
+      data: { key, scheme, isValid: key === schemeToKeysMap.get(scheme) }
+    }
   }
 }

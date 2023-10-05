@@ -4,7 +4,8 @@ import {
   JSONObject,
   $$type,
   Extract$$type,
-  TupleSpliceFromStart
+  TupleSpliceFromStart,
+  JSONValue
 } from "@/lib/types"
 
 interface OuterbaseSQLErrorResult {
@@ -37,22 +38,32 @@ export type SQLNodeHandlerDefinedResult<
   Items extends SQLNodeHandlerReturnRow[] = SQLNodeHandlerReturnRow[]
 > = Items
 
-export interface JSNodeHandlerDefinedSuccessResult<
-  Data extends JSONObject = JSONObject
+export interface JSNodeResult<
+  // 'undefined' is allowed to allow defining optionally undefined properties
+  // which is useful for discrimination
+  Payload extends Record<string, JSONValue | undefined>
 > {
-  data: Data
-  __cmd_type__: "js_node_success_result"
+  source: "js"
+  payload: Payload
 }
 
-export interface JSNodeHandlerDefinedErrorResult<
-  ErrorCode extends string = string
-> {
-  __cmd_type__: "js_node_error_result"
-  errors: {
-    code: ErrorCode
-    message: string
-  }[]
-}
+export type JSNodeHandlerDefinedSuccessResult<
+  Data extends JSONObject = JSONObject
+> = JSNodeResult<{
+  data: Data
+  error?: undefined
+  __cmd_type__?: undefined
+}>
+
+export type JSNodeHandlerDefinedErrorResult<ErrorCode extends string = string> =
+  JSNodeResult<{
+    error: {
+      code: ErrorCode
+      message: string
+    }
+    data?: undefined
+    __cmd_type__?: undefined
+  }>
 
 export type JSNodeHandlerDefinedResult<
   SuccessData extends JSONObject = JSONObject,
@@ -75,8 +86,8 @@ type UnwrappedNodeProxyResult = {
   }
 }
 
-export type JSNodeProxyProxyResult = UnwrappedNodeProxyResult
-export type JSNodeProxyResult = UnwrappedNodeProxyResult
+export type JSNodeProxyProxyResult = JSNodeResult<UnwrappedNodeProxyResult>
+export type JSNodeProxyResult = JSNodeResult<UnwrappedNodeProxyResult>
 export type SQLNodeProxyResult = OuterbaseSQLSuccessResult<
   [UnwrappedNodeProxyResult]
 >
@@ -95,10 +106,11 @@ type UnwrappedNodeProblemResult<CmdDef extends CommandDef> =
       }
 
 export type JSNodeHandlerProblemResult<CmdDef extends CommandDef> =
-  UnwrappedNodeProblemResult<CmdDef>
+  JSNodeResult<UnwrappedNodeProblemResult<CmdDef>>
 
-export type JSNodeProblemResult<CmdDef extends CommandDef> =
+export type JSNodeProblemResult<CmdDef extends CommandDef> = JSNodeResult<
   UnwrappedNodeProblemResult<CmdDef>
+>
 
 export type SQLNodeProblemResult<CmdDef extends CommandDef> =
   UnwrappedNodeProblemResult<CmdDef> extends never

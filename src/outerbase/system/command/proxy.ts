@@ -95,8 +95,11 @@ const getReturnProxyErrorResult = (
   code: NodeProxyErrorCode,
   message: string
 ): JSNodeProxyResult => ({
-  error: { code, message },
-  __cmd_type__: "node_proxy_result"
+  source: "js",
+  payload: {
+    error: { code, message },
+    __cmd_type__: "node_proxy_result"
+  }
 })
 
 function getPrevNodeResultsData(
@@ -176,7 +179,7 @@ const getHeadersValidationInfo = (
 const isJSNodeProxyResult = (value: unknown): value is JSNodeProxyResult => {
   const val = value as JSNodeProxyResult
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare, @typescript-eslint/no-unnecessary-condition, no-underscore-dangle
-  return val.__cmd_type__ === "node_proxy_result"
+  return val.payload?.__cmd_type__ === "node_proxy_result"
 }
 
 const isSQLNodeProxyResult = (value: unknown): value is SQLNodeProxyResult => {
@@ -190,7 +193,7 @@ const isJSNodeProblemResult = (
 ): value is JSNodeProblemResult<CommandDef> => {
   const val = value as JSNodeProblemResult<CommandDef>
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-boolean-literal-compare, @typescript-eslint/no-unnecessary-condition, no-underscore-dangle
-  return val.__cmd_type__ === "cmd_problem_result"
+  return val.payload?.__cmd_type__ === "cmd_problem_result"
 }
 
 const isSQLNodeProblemResult = (
@@ -260,8 +263,8 @@ export function JSNodeProxy({
 
     if (isJSNodeProxyResult(lastResult)) {
       return getReturnProxyErrorResult(
-        lastResult.error.code,
-        lastResult.error.message
+        lastResult.payload.error.code,
+        lastResult.payload.error.message
       )
     }
 
@@ -280,10 +283,13 @@ export function JSNodeProxy({
     if (isSQLNodeProblemResult(lastResult)) {
       // Normalize the wrapped result
       return {
-        __cmd_type__: "cmd_problem_result",
-        error: {
-          code: lastResult.response.items[0].error.code,
-          message: lastResult.response.items[0].error.message
+        source: "js",
+        payload: {
+          __cmd_type__: "cmd_problem_result",
+          error: {
+            code: lastResult.response.items[0].error.code,
+            message: lastResult.response.items[0].error.message
+          }
         }
       }
     }

@@ -11,16 +11,19 @@ export const NODE_ONE: JSNodeHandler<typeof TestCommand, 0> = ({
 }) => {
   if (payload.a === "return_problem")
     return {
-      __cmd_type__: "cmd_problem_result",
-      error: {
-        code: "DEFINED_PROBLEM",
-        message: `Triggered. Headers: ${JSON.stringify(headers)}`
+      source: "js",
+      payload: {
+        __cmd_type__: "cmd_problem_result",
+        error: {
+          code: "DEFINED_PROBLEM",
+          message: `Triggered. Headers: ${JSON.stringify(headers)}`
+        }
       }
     }
   const name = "some-name"
   return {
-    __cmd_type__: "js_node_success_result",
-    data: { name }
+    source: "js",
+    payload: { data: { name } }
   }
 }
 
@@ -39,11 +42,13 @@ export const NODE_TWO: SQLNodeHandlerDefiner<typeof TestCommand, 1> = ({
 export const NODE_THREE: JSNodeHandler<typeof TestCommand, 2> = (...params) => {
   const age = 3
   return {
-    __cmd_type__: "js_node_success_result",
-    data: {
-      age,
-      talk: "from third node handler",
-      thirdNodeParams: JSON.stringify(params)
+    source: "js",
+    payload: {
+      data: {
+        age,
+        talk: "from third node handler",
+        thirdNodeParams: JSON.stringify(params)
+      }
     }
   }
 }
