@@ -67,7 +67,7 @@ export type NodeProxyErrorCode =
   | "__PROXY_MISSING_REQUIRED_HEADERS__"
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-type UnwrappedNodeProxyResult = {
+export type UnwrappedNodeProxyResult = {
   __cmd_type__: "node_proxy_result"
   error: {
     code: NodeProxyErrorCode
