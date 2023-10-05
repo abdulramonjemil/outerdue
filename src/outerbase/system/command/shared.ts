@@ -75,7 +75,7 @@ type UnwrappedNodeProxyResult = {
   }
 }
 
-export type JSNodeHandlerProxyResult = UnwrappedNodeProxyResult
+export type JSNodeProxyProxyResult = UnwrappedNodeProxyResult
 export type JSNodeProxyResult = UnwrappedNodeProxyResult
 export type SQLNodeProxyResult = OuterbaseSQLSuccessResult<
   [UnwrappedNodeProxyResult]
