@@ -213,8 +213,8 @@ type CommandQueryParamsConfig<
   Validator extends QueryValidator | BodyValidator
 > = Method extends "GET" | "DELETE"
   ? {
-      queryParams: Record<keyof GuardedType<Validator>, unknown> &
-        Record<string, unknown>
+      queryParams: Record<keyof GuardedType<Validator>, true> &
+        Record<string, true>
     }
   : { queryParams?: undefined }
 
