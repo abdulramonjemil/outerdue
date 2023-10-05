@@ -206,16 +206,22 @@ type CommandDefWithJSNodeOnly = Omit<CommandDef, "nodes"> & {
   nodes: [JSNodeConfig]
 }
 
-type ProxyReturn =
-  | JSNodeProxyProxyResult
+type CommandDefWithAsyncJSNodeOnly = Omit<CommandDef, "nodes"> & {
+  nodes: [JSNodeConfig & { isAsync: true }]
+}
+
+type HandlerReturn =
   | JSNodeHandlerReturn<CommandDefWithJSNodeOnly, 0>
+  | JSNodeHandlerReturn<CommandDefWithAsyncJSNodeOnly, 0>
+
+type ProxyReturn = JSNodeProxyProxyResult | HandlerReturn
 
 export function JSNodeProxy({
   nodeHandler,
   nodeIndex,
   commandDefinition
 }: {
-  nodeHandler: (...args: unknown[]) => JSNodeHandlerReturn<CommandDef, number>
+  nodeHandler: (...args: unknown[]) => HandlerReturn
   nodeIndex: number
   commandDefinition: CommandDef
 }): ProxyReturn {
@@ -294,13 +300,15 @@ export function JSNodeProxy({
   }
 
   // See the schema for command nodes for parameter types
-  return nodeHandler.apply(null, [
+  const result = nodeHandler.apply(null, [
     {
       payload: paramValidationInfo.paramValue,
       headers: headersValidationInfo.empty ? null : headersValidationInfo.values
     },
     ...prevNodeResultsData.results
   ])
+
+  return result
 }
 
 const sql = String.raw
