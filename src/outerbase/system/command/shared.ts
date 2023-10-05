@@ -67,7 +67,7 @@ export type NodeProxyErrorCode =
   | "__PROXY_MISSING_REQUIRED_HEADERS__"
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-export type UnwrappedNodeProxyResult = {
+type UnwrappedNodeProxyResult = {
   __cmd_type__: "node_proxy_result"
   error: {
     code: NodeProxyErrorCode
@@ -75,6 +75,7 @@ export type UnwrappedNodeProxyResult = {
   }
 }
 
+export type JSNodeHandlerProxyResult = UnwrappedNodeProxyResult
 export type JSNodeProxyResult = UnwrappedNodeProxyResult
 export type SQLNodeProxyResult = OuterbaseSQLSuccessResult<
   [UnwrappedNodeProxyResult]

@@ -11,7 +11,7 @@ import {
   JSNodeProblemResult,
   SQLNodeProblemResult,
   JSNodeConfig,
-  UnwrappedNodeProxyResult
+  JSNodeHandlerProxyResult
 } from "./shared"
 
 import { JSNodeHandlerReturn } from "./server"
@@ -206,7 +206,7 @@ type CommandDefWithJSNodeOnly = Omit<CommandDef, "nodes"> & {
 }
 
 type ProxyReturn =
-  | UnwrappedNodeProxyResult
+  | JSNodeHandlerProxyResult
   | JSNodeHandlerReturn<CommandDefWithJSNodeOnly, 0>
 
 export function JSNodeProxy({
