@@ -8,7 +8,7 @@ import {
   JSONValue
 } from "@/lib/types"
 
-interface OuterbaseSQLErrorResult {
+type OuterbaseSQLErrorResult = {
   success: false
   error: {
     code: string
@@ -17,7 +17,7 @@ interface OuterbaseSQLErrorResult {
   }
 }
 
-interface OuterbaseSQLSuccessResult<Items extends JSONObject[]> {
+type OuterbaseSQLSuccessResult<Items extends JSONObject[]> = {
   success: true
   response: {
     items: Items
@@ -38,11 +38,11 @@ export type SQLNodeHandlerDefinedResult<
   Items extends SQLNodeHandlerReturnRow[] = SQLNodeHandlerReturnRow[]
 > = Items
 
-export interface JSNodeResult<
+export type JSNodeResult<
   // 'undefined' is allowed to allow defining optionally undefined properties
   // which is useful for discrimination
   Payload extends Record<string, JSONValue | undefined>
-> {
+> = {
   source: "js"
   payload: Payload
 }
@@ -156,14 +156,14 @@ export const defineCommandInterface = <
 
 export type CommandInterfaceDef = ReturnType<typeof defineCommandInterface>
 
-export interface JSNodeConfig {
+export type JSNodeConfig = {
   name: string
   type: "js"
   isAsync?: boolean
   resultType: $$type<JSNodeHandlerDefinedResult>
 }
 
-export interface SQLNodeConfig {
+export type SQLNodeConfig = {
   name: string
   type: "sql"
   resultType: $$type<SQLNodeHandlerDefinedResult>
@@ -181,10 +181,10 @@ type CommandNodesConfig =
  * in `args`, though the handler for the node might not be passed all of those
  * depending on the proxy.
  */
-export interface RawCommandNodeSchema<
+export type RawCommandNodeSchema<
   CmdDef extends CommandDef,
   NodeIndex extends number
-> {
+> = {
   /** These arguments are determined by the proxy for the respective node */
   args: [
     {

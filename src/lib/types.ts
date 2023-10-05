@@ -73,7 +73,7 @@ const $$__type_only__STORED_TYPE = Symbol("STORED_TYPE")
 const $$__type_only__TYPE_PLACEHOLDER = Symbol("TYPE_PLACEHOLDER")
 /* eslint-enable @typescript-eslint/naming-convention */
 
-export interface $$type<Type> {
+export type $$type<Type> = {
   [$$__type_only__STORED_TYPE]: Type
 }
 

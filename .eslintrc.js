@@ -20,6 +20,7 @@ module.exports = {
   plugins: ["@typescript-eslint", "eslint-comments", "ignore-generated"],
 
   rules: {
+    "@typescript-eslint/consistent-type-definitions": ["error", "type"],
     "import/prefer-default-export": "off",
 
     "import/extensions": [
