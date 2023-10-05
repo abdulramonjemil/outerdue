@@ -1,13 +1,13 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable max-classes-per-file */
 
-import { GuardedType, LastItem, Extract$$type } from "@/lib/types"
+import { GuardedType, Indices } from "@/lib/types"
 
 import {
   BaseBodyType,
   BaseQueryType,
   CommandDef,
-  HandlerDefinedResultToNodeResult,
+  NodeResult,
   parseCommandResultJSON
 } from "./shared"
 
@@ -19,25 +19,38 @@ import {
 type CommandEndpointRequestInit = Omit<RequestInit, "method" | "body">
 
 export type CommandEndpointResult<CmdDef extends CommandDef = CommandDef> =
-  HandlerDefinedResultToNodeResult<
-    CmdDef,
-    Extract$$type<LastItem<CmdDef["nodes"]>["resultType"]>
-  >
+  // Make the nodes into a generic to trigger distributivity. This is necessary to
+  // make sure that a command def with a union of nodes (e.g. default
+  // `CommandDef`) works
+  CmdDef["nodes"] extends infer T1
+    ? T1 extends CmdDef["nodes"]
+      ? NodeResult<
+          // The omit and intersection below are needed for a union of nodes to
+          // work. The current node distributed over is used instead of the union.
+          Omit<CmdDef, "nodes"> & { nodes: T1 } extends infer T2 extends CmdDef
+            ? T2
+            : never,
+          // Trick to pick the highest index in a tuple
+          Exclude<
+            Indices<T1>,
+            T1 extends [...infer T2, unknown] ? Indices<T2> : never
+          >
+        >
+      : never
+    : never
 
-class CommandEndpointResponse<
-  T extends CommandEndpointResult
-> extends Response {
-  async json(): Promise<T> {
+class CommandEndpointResponse<CmdDef extends CommandDef> extends Response {
+  async json(): Promise<CommandEndpointResult<CmdDef>> {
     const resultText = await this.text()
-    return parseCommandResultJSON(resultText) as T
+    return parseCommandResultJSON(resultText) as CommandEndpointResult<CmdDef>
   }
 }
 
-async function fetchCommandEndpointResponse<T extends CommandEndpointResult>(
+async function fetchCommandEndpointResponse<CmdDef extends CommandDef>(
   ...fetchParams: Parameters<typeof fetch>
-): Promise<CommandEndpointResponse<T>> {
+): Promise<CommandEndpointResponse<CmdDef>> {
   const response = await fetch(...fetchParams)
-  return new CommandEndpointResponse<T>(response.body, response)
+  return new CommandEndpointResponse<CmdDef>(response.body, response)
 }
 
 type CommandFetchHeadersParam<CmdDef extends CommandDef> =
@@ -56,8 +69,7 @@ type CommandEndpointFetchParams<CmdDef extends CommandDef> = CmdDef extends {
   method: "GET" | "DELETE"
 }
   ? {
-      // This extraction should not have to be done, because it's possible that
-      // the body type defined is assignable to `BaseQueryType`. However, there're
+      // This extraction should not have to be done. However, there're
       // limitations with typescript that I've not been able to work around.
       query: Extract<GuardedType<CmdDef["payloadValidator"]>, BaseQueryType>
       body?: undefined
@@ -123,11 +135,6 @@ export class CommandEndpoint<CmdDef extends CommandDef> {
       }
     }
 
-    return fetchCommandEndpointResponse<
-      HandlerDefinedResultToNodeResult<
-        CmdDef,
-        Extract$$type<LastItem<CmdDef["nodes"]>["resultType"]>
-      >
-    >(endpointURL, init)
+    return fetchCommandEndpointResponse<CmdDef>(endpointURL, init)
   }
 }

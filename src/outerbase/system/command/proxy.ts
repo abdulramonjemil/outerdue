@@ -3,15 +3,15 @@ import type { GuardedType, JSONValue } from "@/lib/types"
 
 import { type CommandEndpointResult } from "./client"
 import {
-  JSNodeHandlerDefinedResult,
   NodeProxyErrorCode,
-  HandlerDefinedResultToNodeResult,
   tryCommandResultJSONParse,
   CommandDef,
   JSNodeProxyResult,
   SQLNodeProxyResult,
   JSNodeProblemResult,
-  SQLNodeProblemResult
+  SQLNodeProblemResult,
+  JSNodeConfig,
+  NodeResult
 } from "./shared"
 
 import { JSNodeHandlerReturn } from "./server"
@@ -201,6 +201,11 @@ const isSQLNodeProblemResult = (
   return val.response?.items?.[0]?.__cmd_type__ === "cmd_problem_result"
 }
 
+type GenericJSNodeResult = NodeResult<
+  Omit<CommandDef, "nodes"> & { nodes: [JSNodeConfig] },
+  0
+>
+
 export function JSNodeProxy({
   nodeHandler,
   nodeIndex,
@@ -209,9 +214,7 @@ export function JSNodeProxy({
   nodeHandler: (...args: unknown[]) => JSNodeHandlerReturn<CommandDef, number>
   nodeIndex: number
   commandDefinition: CommandDef
-}):
-  | HandlerDefinedResultToNodeResult<CommandDef, JSNodeHandlerDefinedResult>
-  | JSNodeHandlerReturn<CommandDef, number> {
+}): GenericJSNodeResult | JSNodeHandlerReturn<CommandDef, number> {
   const paramValidationInfo = getParamValidationInfo(commandDefinition)
 
   if (paramValidationInfo.status === "error") {

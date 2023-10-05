@@ -4,8 +4,7 @@ import {
   JSONObject,
   $$type,
   Extract$$type,
-  TupleSelectFromStart,
-  TupleObjectsMap
+  TupleSpliceFromStart
 } from "@/lib/types"
 
 interface OuterbaseSQLErrorResult {
@@ -109,17 +108,23 @@ export type NodeProblemResult<CmdDef extends CommandDef> =
   | JSNodeProblemResult<CmdDef>
   | SQLNodeProblemResult<CmdDef>
 
-export type HandlerDefinedResultToNodeResult<
+export type NodeResult<
   CmdDef extends CommandDef,
-  Result extends JSNodeHandlerDefinedResult | SQLNodeHandlerDefinedResult
-> = Result extends SQLNodeHandlerDefinedResult
-  ?
-      | OuterbaseSQLSuccessResult<Result>
-      | OuterbaseSQLErrorResult
-      | SQLNodeProxyResult
-      | SQLNodeProblemResult<CmdDef>
-  : Result extends JSNodeHandlerDefinedResult
-  ? Result | JSNodeProxyResult | JSNodeProblemResult<CmdDef>
+  NodeIndex extends number
+> = Extract$$type<
+  CmdDef["nodes"][NodeIndex]["resultType"]
+> extends infer T extends
+  | JSNodeHandlerDefinedResult
+  | SQLNodeHandlerDefinedResult
+  ? T extends SQLNodeHandlerDefinedResult
+    ?
+        | OuterbaseSQLSuccessResult<T>
+        | OuterbaseSQLErrorResult
+        | SQLNodeProxyResult
+        | SQLNodeProblemResult<CmdDef>
+    : T extends JSNodeHandlerDefinedResult
+    ? T | JSNodeProxyResult | JSNodeProblemResult<CmdDef>
+    : never
   : never
 
 type CommandMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
@@ -179,22 +184,17 @@ export interface RawCommandNodeSchema<
               : string | undefined
           }
     },
-    ...(TupleSelectFromStart<
+
+    ...(TupleSpliceFromStart<
       CmdDef["nodes"],
       NodeIndex
     > extends infer T1 extends CmdDef["nodes"][number][]
-      ? TupleObjectsMap<T1, "resultType"> extends infer T2 extends (
-          | $$type<JSNodeHandlerDefinedResult>
-          | $$type<SQLNodeHandlerDefinedResult>
-        )[]
-        ? {
-            [K in keyof T2]: HandlerDefinedResultToNodeResult<
-              CmdDef,
-              Extract$$type<T2[K]>
-            >
-          } extends infer T3 extends readonly unknown[]
-          ? T3
-          : never
+      ? {
+          [K in keyof T1]: K extends `${infer T2 extends number}`
+            ? NodeResult<CmdDef, T2>
+            : never
+        } extends infer T3 extends readonly unknown[]
+        ? T3
         : never
       : never)
   ]

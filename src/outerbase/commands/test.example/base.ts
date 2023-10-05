@@ -27,7 +27,7 @@ export const TestCommand = defineCommand({
     {
       name: "Construct query",
       type: "js",
-      resultType: $$type<JSNodeHandlerDefinedResult>()
+      resultType: $$type<JSNodeHandlerDefinedResult<{ name: string }>>()
     },
     {
       name: "Run query",

@@ -24,9 +24,8 @@ export type NonNegativeRangeList<
   ? If<IncludeTo, [...__Current, __Current["length"]], __Current>
   : NonNegativeRangeList<To, IncludeTo, [...__Current, __Current["length"]]>
 
-export type TupleSelectFromStart<
+export type TupleSpliceFromStart<
   Tuple extends [...unknown[]],
-  // EndIndex extends NonNegativeRange<Tuple["length"]>,
   EndIndex extends number,
   IncludeEndIndexType extends boolean = false,
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -41,7 +40,7 @@ export type TupleSelectFromStart<
       [...__Current, Tuple[__Current["length"]]],
       __Current
     >
-  : TupleSelectFromStart<
+  : TupleSpliceFromStart<
       Tuple,
       EndIndex,
       IncludeEndIndexType,
@@ -50,13 +49,6 @@ export type TupleSelectFromStart<
 
 export type GuardedType<F extends (arg: unknown) => arg is unknown> =
   F extends (arg: unknown) => arg is infer Type ? Type : never
-
-export type TupleObjectsMap<
-  Tuple extends readonly object[],
-  Property extends keyof Tuple[number]
-> = {
-  [K in keyof Tuple]: Tuple[K][Property]
-}
 
 export type Indices<T extends readonly unknown[]> = Exclude<
   Partial<T>["length"],
