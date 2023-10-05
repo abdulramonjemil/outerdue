@@ -1,3 +1,6 @@
+-- This file contains PostgreSQL code that should be run on the PostgreSQL DB
+-- using this system. It sets up the functions used in the SQL node proxy.
+
 CREATE SCHEMA IF NOT EXISTS cmd_proxy;
 
 DROP FUNCTION IF EXISTS cmd_proxy.get_proxy_result;
