@@ -49,21 +49,21 @@ export type JSNodeResult<
 
 export type JSNodeHandlerDefinedSuccessResult<
   Data extends JSONObject = JSONObject
-> = JSNodeResult<{
+> = {
   data: Data
   error?: undefined
   __type__?: undefined
-}>
+}
 
 export type JSNodeHandlerDefinedErrorResult<ErrorCode extends string = string> =
-  JSNodeResult<{
+  {
     error: {
       code: ErrorCode
       message: string
     }
     data?: undefined
     __type__?: undefined
-  }>
+  }
 
 export type JSNodeHandlerDefinedResult<
   SuccessData extends JSONObject = JSONObject,
@@ -106,7 +106,7 @@ type UnwrappedNodeProblemResult<CmdDef extends CommandDef> =
       }
 
 export type JSNodeHandlerProblemResult<CmdDef extends CommandDef> =
-  JSNodeResult<UnwrappedNodeProblemResult<CmdDef>>
+  UnwrappedNodeProblemResult<CmdDef>
 
 export type JSNodeProblemResult<CmdDef extends CommandDef> = JSNodeResult<
   UnwrappedNodeProblemResult<CmdDef>
@@ -135,8 +135,8 @@ export type NodeResult<
         | OuterbaseSQLErrorResult
         | SQLNodeProxyResult
         | SQLNodeProblemResult<CmdDef>
-    : T extends JSNodeHandlerDefinedResult
-    ? T | JSNodeProxyResult | JSNodeProblemResult<CmdDef>
+    : T extends infer T1 extends JSNodeHandlerDefinedResult
+    ? JSNodeResult<T1> | JSNodeProxyResult | JSNodeProblemResult<CmdDef>
     : never
   : never
 

@@ -11,7 +11,8 @@ import {
   JSNodeProblemResult,
   SQLNodeProblemResult,
   JSNodeConfig,
-  JSNodeProxyProxyResult
+  JSNodeProxyProxyResult,
+  JSNodeResult
 } from "./shared"
 
 import { JSNodeHandlerReturn } from "./server"
@@ -214,7 +215,15 @@ type HandlerReturn =
   | JSNodeHandlerReturn<CommandDefWithJSNodeOnly, 0>
   | JSNodeHandlerReturn<CommandDefWithAsyncJSNodeOnly, 0>
 
-type ProxyReturn = JSNodeProxyProxyResult | HandlerReturn
+// type ProxyReturn = JSNodeProxyProxyResult | HandlerReturn
+type ProxyReturn =
+  | JSNodeProxyProxyResult
+  | JSNodeResult<JSNodeHandlerReturn<CommandDefWithJSNodeOnly, 0>>
+  | Promise<
+      JSNodeResult<
+        Awaited<JSNodeHandlerReturn<CommandDefWithAsyncJSNodeOnly, 0>>
+      >
+    >
 
 export function JSNodeProxy({
   nodeHandler,
@@ -308,7 +317,11 @@ export function JSNodeProxy({
     ...prevNodeResultsData.results
   ])
 
-  return result
+  if (result instanceof Promise) {
+    return result.then((value) => ({ source: "js", payload: value }))
+  }
+
+  return { source: "js", payload: result }
 }
 
 const sql = String.raw
