@@ -47,7 +47,7 @@ export async function validateKey<
       body: { key, scheme }
     })
 
-    if (!keyValidationResult.payload.error) {
+    if (keyValidationResult.payload.__type__ !== "problem_result") {
       if (keyValidationResult.payload.data.isValid) return { status: "success" }
       return {
         status: "failed",

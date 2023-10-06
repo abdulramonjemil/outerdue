@@ -3,15 +3,14 @@ import type { GuardedType, JSONValue } from "@/lib/types"
 
 import { type CommandEndpointResult } from "./client"
 import {
-  NodeProxyErrorCode,
+  NodeProblemCode,
   tryCommandResultJSONParse,
   CommandDef,
-  JSNodeProxyResult,
-  SQLNodeProxyResult,
+  SQLNodeProblemResult,
   JSNodeExitResult,
   SQLNodeExitResult,
   JSNodeConfig,
-  JSNodeProxyProxyResult,
+  JSNodeProblemResult,
   JSNodeResult
 } from "./shared"
 
@@ -93,13 +92,13 @@ const nodeNameToIndexer = (nodeName: string) =>
   nodeName.toLowerCase().replace(/ /g, "-")
 
 const getReturnProxyErrorResult = (
-  code: NodeProxyErrorCode,
+  code: NodeProblemCode,
   message: string
-): JSNodeProxyResult => ({
+): JSNodeProblemResult => ({
   source: "js",
   payload: {
-    error: { code, message },
-    __type__: "proxy_result"
+    problem: { code, message },
+    __type__: "problem_result"
   }
 })
 
@@ -178,16 +177,20 @@ const getHeadersValidationInfo = (
 }
 
 /* eslint-disable @typescript-eslint/no-unnecessary-condition, no-underscore-dangle */
-const isJSNodeProxyResult = (value: unknown): value is JSNodeProxyResult => {
-  const val = value as JSNodeProxyResult
-  return val?.source === "js" && val?.payload?.__type__ === "proxy_result"
+const isJSNodeProblemResult = (
+  value: unknown
+): value is JSNodeProblemResult => {
+  const val = value as JSNodeProblemResult
+  return val?.source === "js" && val?.payload?.__type__ === "problem_result"
 }
 
-const isSQLNodeProxyResult = (value: unknown): value is SQLNodeProxyResult => {
-  const val = value as SQLNodeProxyResult
+const isSQLNodeProblemResult = (
+  value: unknown
+): value is SQLNodeProblemResult => {
+  const val = value as SQLNodeProblemResult
   return (
     typeof val?.success === "boolean" &&
-    val?.response?.items?.[0]?.__type__ === "proxy_result"
+    val?.response?.items?.[0]?.__type__ === "problem_result"
   )
 }
 
@@ -221,9 +224,8 @@ type HandlerReturn =
   | JSNodeHandlerReturn<CommandDefWithJSNodeOnly, 0>
   | JSNodeHandlerReturn<CommandDefWithAsyncJSNodeOnly, 0>
 
-// type ProxyReturn = JSNodeProxyProxyResult | HandlerReturn
 type ProxyReturn =
-  | JSNodeProxyProxyResult
+  | JSNodeProblemResult
   | JSNodeResult<JSNodeHandlerReturn<CommandDefWithJSNodeOnly, 0>>
   | Promise<
       JSNodeResult<
@@ -244,7 +246,7 @@ export function JSNodeProxy({
 
   if (paramValidationInfo.status === "error") {
     return getReturnProxyErrorResult(
-      "PROXY_INVALID_BODY_OR_QUERY",
+      "INVALID_BODY_OR_QUERY",
       `The request '${paramValidationInfo.paramType}' does not match the specified type`
     )
   }
@@ -253,7 +255,7 @@ export function JSNodeProxy({
 
   if (!headersValidationInfo.success) {
     return getReturnProxyErrorResult(
-      "PROXY_MISSING_REQUIRED_HEADERS",
+      "MISSING_REQUIRED_HEADERS",
       `The following headers are missing: ${headersValidationInfo.missing.join(
         ", "
       )}`
@@ -267,7 +269,7 @@ export function JSNodeProxy({
 
   if (!prevNodeResultsData.success) {
     return getReturnProxyErrorResult(
-      "PROXY_INTERNAL_PARSING_ERROR",
+      "INTERNAL_PARSING_ERROR",
       `Could not determine the result of nodes '${prevNodeResultsData.faultyNodesNames.join(
         ", "
       )}' inside node '${
@@ -280,17 +282,17 @@ export function JSNodeProxy({
     const lastResult =
       prevNodeResultsData.results[prevNodeResultsData.results.length - 1]
 
-    if (isJSNodeProxyResult(lastResult)) {
+    if (isJSNodeProblemResult(lastResult)) {
       return getReturnProxyErrorResult(
-        lastResult.payload.error.code,
-        lastResult.payload.error.message
+        lastResult.payload.problem.code,
+        lastResult.payload.problem.message
       )
     }
 
-    if (isSQLNodeProxyResult(lastResult)) {
+    if (isSQLNodeProblemResult(lastResult)) {
       return getReturnProxyErrorResult(
-        lastResult.response.items[0].error.code,
-        lastResult.response.items[0].error.message
+        lastResult.response.items[0].problem.code,
+        lastResult.response.items[0].problem.message
       )
     }
 
@@ -353,9 +355,9 @@ RETURNS boolean AS $$ -- Returned boolean so SELECT ... INTO works
 BEGIN
   DROP TABLE IF EXISTS __cmd_current_node_result;
 
-  IF cmd_utils.is_proxy_result(prev_node_result) THEN
+  IF cmd_utils.is_problem_result(prev_node_result) THEN
     CREATE TEMP TABLE __cmd_current_node_result AS
-    SELECT * FROM cmd_utils.get_proxy_result(prev_node_result);
+    SELECT * FROM cmd_utils.get_problem_result(prev_node_result);
 
   ELSIF cmd_utils.is_exit_result(prev_node_result) THEN
     CREATE TEMP TABLE __cmd_current_node_result AS

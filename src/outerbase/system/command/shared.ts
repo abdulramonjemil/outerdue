@@ -72,29 +72,28 @@ export type JSNodeHandlerDefinedResult<
   | JSNodeHandlerDefinedSuccessResult<SuccessData>
   | JSNodeHandlerDefinedErrorResult<ErrorCode>
 
-export type NodeProxyErrorCode =
-  | "PROXY_INVALID_BODY_OR_QUERY"
-  | "PROXY_INTERNAL_PARSING_ERROR"
-  | "PROXY_MISSING_REQUIRED_HEADERS"
+export type NodeProblemCode =
+  | "INVALID_BODY_OR_QUERY"
+  | "INTERNAL_PARSING_ERROR"
+  | "MISSING_REQUIRED_HEADERS"
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-type UnwrappedNodeProxyResult = {
-  __type__: "proxy_result"
-  error: {
-    code: NodeProxyErrorCode
+type UnwrappedProblemResult = {
+  __type__: "problem_result"
+  problem: {
+    code: NodeProblemCode
     message: string
   }
 }
 
-export type JSNodeProxyProxyResult = JSNodeResult<UnwrappedNodeProxyResult>
-export type JSNodeProxyResult = JSNodeResult<UnwrappedNodeProxyResult>
-export type SQLNodeProxyResult = OuterbaseSQLSuccessResult<
-  [UnwrappedNodeProxyResult]
+export type JSNodeProblemResult = JSNodeResult<UnwrappedProblemResult>
+export type SQLNodeProblemResult = OuterbaseSQLSuccessResult<
+  [UnwrappedProblemResult]
 >
 
-export type NodeProxyResult = JSNodeProxyResult | SQLNodeProxyResult
+export type NodeProblemResult = JSNodeProblemResult | SQLNodeProblemResult
 
-type UnwrappedNodeExitResult<CmdDef extends CommandDef> =
+type UnwrappedExitResult<CmdDef extends CommandDef> =
   CmdDef["exitCodes"] extends []
     ? never
     : {
@@ -106,16 +105,16 @@ type UnwrappedNodeExitResult<CmdDef extends CommandDef> =
       }
 
 export type JSNodeHandlerExitResult<CmdDef extends CommandDef> =
-  UnwrappedNodeExitResult<CmdDef>
+  UnwrappedExitResult<CmdDef>
 
 export type JSNodeExitResult<CmdDef extends CommandDef> = JSNodeResult<
-  UnwrappedNodeExitResult<CmdDef>
+  UnwrappedExitResult<CmdDef>
 >
 
 export type SQLNodeExitResult<CmdDef extends CommandDef> =
-  UnwrappedNodeExitResult<CmdDef> extends never
+  UnwrappedExitResult<CmdDef> extends never
     ? never
-    : OuterbaseSQLSuccessResult<[UnwrappedNodeExitResult<CmdDef>]>
+    : OuterbaseSQLSuccessResult<[UnwrappedExitResult<CmdDef>]>
 
 export type NodeExitResult<CmdDef extends CommandDef> =
   | JSNodeExitResult<CmdDef>
@@ -133,10 +132,10 @@ export type NodeResult<
     ?
         | OuterbaseSQLSuccessResult<T>
         | OuterbaseSQLErrorResult
-        | SQLNodeProxyResult
+        | SQLNodeProblemResult
         | SQLNodeExitResult<CmdDef>
     : T extends infer T1 extends JSNodeHandlerDefinedResult
-    ? JSNodeResult<T1> | JSNodeProxyResult | JSNodeExitResult<CmdDef>
+    ? JSNodeResult<T1> | JSNodeProblemResult | JSNodeExitResult<CmdDef>
     : never
   : never
 

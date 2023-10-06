@@ -4,7 +4,7 @@ import {
   CommandDef,
   RawCommandNodeSchema,
   JSNodeHandlerDefinedResult,
-  NodeProxyResult,
+  NodeProblemResult,
   SQLNodeHandlerDefinedResult,
   NodeExitResult,
   JSNodeHandlerExitResult
@@ -16,7 +16,7 @@ type JSNodeHandlerArgs<
 > = RawCommandNodeSchema<CmdDef, NodeIndex>["args"] extends infer T extends
   readonly unknown[]
   ? {
-      [K in keyof T]: Exclude<T[K], NodeProxyResult | NodeExitResult<CmdDef>>
+      [K in keyof T]: Exclude<T[K], NodeProblemResult | NodeExitResult<CmdDef>>
     }
   : never
 
@@ -81,7 +81,7 @@ export type SQLNodeHandlerParam<
   : CmdDef["nodes"][NodeIndex]["type"] extends "sql"
   ? Exclude<
       LastItem<RawCommandNodeSchema<CmdDef, NodeIndex>["args"]>,
-      NodeProxyResult | NodeExitResult<CmdDef>
+      NodeProblemResult | NodeExitResult<CmdDef>
     >
   : never
 
