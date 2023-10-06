@@ -97,7 +97,7 @@ const getReturnProxyErrorResult = (
 ): JSNodeProblemResult => ({
   source: "js",
   payload: {
-    problem: { code, message },
+    error: { code, message },
     __type__: "problem_result"
   }
 })
@@ -284,15 +284,15 @@ export function JSNodeProxy({
 
     if (isJSNodeProblemResult(lastResult)) {
       return getReturnProxyErrorResult(
-        lastResult.payload.problem.code,
-        lastResult.payload.problem.message
+        lastResult.payload.error.code,
+        lastResult.payload.error.message
       )
     }
 
     if (isSQLNodeProblemResult(lastResult)) {
       return getReturnProxyErrorResult(
-        lastResult.response.items[0].problem.code,
-        lastResult.response.items[0].problem.message
+        lastResult.response.items[0].error.code,
+        lastResult.response.items[0].error.message
       )
     }
 

@@ -80,7 +80,7 @@ export type NodeProblemCode =
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type UnwrappedProblemResult = {
   __type__: "problem_result"
-  problem: {
+  error: {
     code: NodeProblemCode
     message: string
   }

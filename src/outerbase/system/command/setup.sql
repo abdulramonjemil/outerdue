@@ -5,23 +5,17 @@ CREATE SCHEMA IF NOT EXISTS cmd_utils;
 
 DROP FUNCTION IF EXISTS cmd_utils.get_problem_result;
 CREATE OR REPLACE FUNCTION cmd_utils.get_problem_result(node_result jsonb)
-RETURNS table (__type__ text, problem jsonb) AS $$
+RETURNS table (__type__ text, error jsonb) AS $$
 BEGIN
   IF node_result->'payload'->>'__type__' = 'problem_result' THEN
     RETURN QUERY SELECT
       'problem_result' AS __type__,
-      jsonb_build_object(
-        'code', node_result->'payload'->'problem'->>'code',
-        'message', node_result->'payload'->'problem'->>'message'
-      ) AS problem;
+      node_result->'payload'->'error' AS error;
 
   ELSE -- Take the result as SQL node proxy
     RETURN QUERY SELECT
       'problem_result' AS __type__,
-      jsonb_build_object(
-        'code', node_result->'response'->'items'->0->'problem'->>'code',
-        'message', node_result->'response'->'items'->0->'problem'->>'message'
-      ) AS problem;
+      node_result->'response'->'items'->0->'error' AS error;
   END IF;
 END $$ LANGUAGE plpgsql;
 
@@ -32,18 +26,12 @@ BEGIN
   IF node_result->'payload'->>'__type__' = 'exit_result' THEN
     RETURN QUERY SELECT
       'exit_result' AS __type__,
-      jsonb_build_object(
-        'code', node_result->'payload'->'info'->>'code',
-        'message', node_result->'payload'->'info'->>'message'
-      ) AS info;
+      node_result->'payload'->'info' AS info;
 
   ELSE -- Take the result as SQL node proxy
     RETURN QUERY SELECT
       'exit_result' AS __type__,
-      jsonb_build_object(
-        'code', node_result->'response'->'items'->0->'info'->>'code',
-        'message', node_result->'response'->'items'->0->'info'->>'message'
-      ) AS info;
+      node_result->'response'->'items'->0->'info' AS info;
   END IF;
 END $$ LANGUAGE plpgsql;
 
