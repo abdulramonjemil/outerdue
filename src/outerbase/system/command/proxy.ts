@@ -180,26 +180,32 @@ const getHeadersValidationInfo = (
 /* eslint-disable @typescript-eslint/no-unnecessary-condition, no-underscore-dangle */
 const isJSNodeProxyResult = (value: unknown): value is JSNodeProxyResult => {
   const val = value as JSNodeProxyResult
-  return val?.payload?.__type__ === "proxy_result"
+  return val?.source === "js" && val?.payload?.__type__ === "proxy_result"
 }
 
 const isSQLNodeProxyResult = (value: unknown): value is SQLNodeProxyResult => {
   const val = value as SQLNodeProxyResult
-  return val?.response?.items?.[0]?.__type__ === "proxy_result"
+  return (
+    typeof val?.success === "boolean" &&
+    val?.response?.items?.[0]?.__type__ === "proxy_result"
+  )
 }
 
 const isJSNodeProblemResult = (
   value: unknown
 ): value is JSNodeProblemResult<CommandDef> => {
   const val = value as JSNodeProblemResult<CommandDef>
-  return val?.payload?.__type__ === "problem_result"
+  return val?.source === "js" && val?.payload?.__type__ === "problem_result"
 }
 
 const isSQLNodeProblemResult = (
   value: unknown
 ): value is SQLNodeProblemResult<CommandDef> => {
   const val = value as SQLNodeProblemResult<CommandDef>
-  return val?.response?.items?.[0]?.__type__ === "problem_result"
+  return (
+    typeof val?.success === "boolean" &&
+    val?.response?.items?.[0]?.__type__ === "problem_result"
+  )
 }
 /* eslint-enable @typescript-eslint/no-unnecessary-condition, no-underscore-dangle */
 
