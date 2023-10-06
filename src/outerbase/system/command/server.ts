@@ -6,8 +6,8 @@ import {
   JSNodeHandlerDefinedResult,
   NodeProxyResult,
   SQLNodeHandlerDefinedResult,
-  NodeProblemResult,
-  JSNodeHandlerProblemResult
+  NodeExitResult,
+  JSNodeHandlerExitResult
 } from "./shared"
 
 type JSNodeHandlerArgs<
@@ -16,7 +16,7 @@ type JSNodeHandlerArgs<
 > = RawCommandNodeSchema<CmdDef, NodeIndex>["args"] extends infer T extends
   readonly unknown[]
   ? {
-      [K in keyof T]: Exclude<T[K], NodeProxyResult | NodeProblemResult<CmdDef>>
+      [K in keyof T]: Exclude<T[K], NodeProxyResult | NodeExitResult<CmdDef>>
     }
   : never
 
@@ -28,8 +28,8 @@ export type JSNodeHandlerReturn<
   ? [T] extends [JSNodeHandlerDefinedResult]
     ? CmdDef["nodes"][NodeIndex] extends { type: "js" }
       ? CmdDef["nodes"][NodeIndex]["isAsync"] extends true
-        ? Promise<T | JSNodeHandlerProblemResult<CmdDef>>
-        : T | JSNodeHandlerProblemResult<CmdDef>
+        ? Promise<T | JSNodeHandlerExitResult<CmdDef>>
+        : T | JSNodeHandlerExitResult<CmdDef>
       : never
     : never
   : never
@@ -81,7 +81,7 @@ export type SQLNodeHandlerParam<
   : CmdDef["nodes"][NodeIndex]["type"] extends "sql"
   ? Exclude<
       LastItem<RawCommandNodeSchema<CmdDef, NodeIndex>["args"]>,
-      NodeProxyResult | NodeProblemResult<CmdDef>
+      NodeProxyResult | NodeExitResult<CmdDef>
     >
   : never
 

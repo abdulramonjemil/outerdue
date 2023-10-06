@@ -39,7 +39,7 @@ export const KeyValidationCommand = defineCommand({
   headers: null,
   id: "access.validate_key",
   path: "/access/validate/key",
-  problems: [],
+  exitCodes: [],
   payloadValidator: isValidKeyValidationPayload,
   nodes: [
     {

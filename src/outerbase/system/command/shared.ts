@@ -94,32 +94,32 @@ export type SQLNodeProxyResult = OuterbaseSQLSuccessResult<
 
 export type NodeProxyResult = JSNodeProxyResult | SQLNodeProxyResult
 
-type UnwrappedNodeProblemResult<CmdDef extends CommandDef> =
-  CmdDef["problems"] extends []
+type UnwrappedNodeExitResult<CmdDef extends CommandDef> =
+  CmdDef["exitCodes"] extends []
     ? never
     : {
-        __type__: "problem_result"
+        __type__: "exit_result"
         error: {
-          code: CmdDef["problems"][number]
+          code: CmdDef["exitCodes"][number]
           message: string
         }
       }
 
-export type JSNodeHandlerProblemResult<CmdDef extends CommandDef> =
-  UnwrappedNodeProblemResult<CmdDef>
+export type JSNodeHandlerExitResult<CmdDef extends CommandDef> =
+  UnwrappedNodeExitResult<CmdDef>
 
-export type JSNodeProblemResult<CmdDef extends CommandDef> = JSNodeResult<
-  UnwrappedNodeProblemResult<CmdDef>
+export type JSNodeExitResult<CmdDef extends CommandDef> = JSNodeResult<
+  UnwrappedNodeExitResult<CmdDef>
 >
 
-export type SQLNodeProblemResult<CmdDef extends CommandDef> =
-  UnwrappedNodeProblemResult<CmdDef> extends never
+export type SQLNodeExitResult<CmdDef extends CommandDef> =
+  UnwrappedNodeExitResult<CmdDef> extends never
     ? never
-    : OuterbaseSQLSuccessResult<[UnwrappedNodeProblemResult<CmdDef>]>
+    : OuterbaseSQLSuccessResult<[UnwrappedNodeExitResult<CmdDef>]>
 
-export type NodeProblemResult<CmdDef extends CommandDef> =
-  | JSNodeProblemResult<CmdDef>
-  | SQLNodeProblemResult<CmdDef>
+export type NodeExitResult<CmdDef extends CommandDef> =
+  | JSNodeExitResult<CmdDef>
+  | SQLNodeExitResult<CmdDef>
 
 export type NodeResult<
   CmdDef extends CommandDef,
@@ -134,9 +134,9 @@ export type NodeResult<
         | OuterbaseSQLSuccessResult<T>
         | OuterbaseSQLErrorResult
         | SQLNodeProxyResult
-        | SQLNodeProblemResult<CmdDef>
+        | SQLNodeExitResult<CmdDef>
     : T extends infer T1 extends JSNodeHandlerDefinedResult
-    ? JSNodeResult<T1> | JSNodeProxyResult | JSNodeProblemResult<CmdDef>
+    ? JSNodeResult<T1> | JSNodeProxyResult | JSNodeExitResult<CmdDef>
     : never
   : never
 
@@ -248,7 +248,7 @@ export const defineCommand = <
   Method extends InterfaceDef["methods"][number],
   // The boolean indicates whether the header is required or not
   Headers extends Record<string, boolean> | null,
-  Problems extends string[],
+  ExitCodes extends string[],
   PayloadValidator extends Method extends "GET" | "DELETE"
     ? QueryValidator
     : Method extends "POST" | "PUT" | "PATCH"
@@ -264,7 +264,7 @@ export const defineCommand = <
     id: ID
     method: Method
     headers: Headers
-    problems: [...Problems]
+    exitCodes: [...ExitCodes]
     payloadValidator: PayloadValidator
   } & CommandQueryParamsConfig<Method, PayloadValidator>
 ) => commandConfig

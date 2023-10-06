@@ -9,11 +9,11 @@ export const NODE_ONE: JSNodeHandler<typeof TestCommand, 0> = ({
   payload,
   headers
 }) => {
-  if (payload.a === "return_problem")
+  if (payload.a === "return_exit")
     return {
-      __type__: "problem_result",
+      __type__: "exit_result",
       error: {
-        code: "DEFINED_PROBLEM",
+        code: "SOME_EXIT_CODE",
         message: `Triggered. Headers: ${JSON.stringify(headers)}`
       }
     }

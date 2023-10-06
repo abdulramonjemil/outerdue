@@ -15,7 +15,7 @@ export const TestCommand = defineCommand({
   method: "GET",
   queryParams: { a: true, b: true },
   headers: { "X-REQUIRED-HEADER": true, "X-OPTIONAL-HEADER": false },
-  problems: ["DEFINED_PROBLEM"],
+  exitCodes: ["SOME_EXIT_CODE"],
   payloadValidator: (query): query is Record<"a" | "b", string> => {
     if (typeof query !== "object") return false
     const theQuery = query as Record<string, unknown>

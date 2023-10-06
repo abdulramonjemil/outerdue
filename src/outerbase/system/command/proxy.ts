@@ -8,8 +8,8 @@ import {
   CommandDef,
   JSNodeProxyResult,
   SQLNodeProxyResult,
-  JSNodeProblemResult,
-  SQLNodeProblemResult,
+  JSNodeExitResult,
+  SQLNodeExitResult,
   JSNodeConfig,
   JSNodeProxyProxyResult,
   JSNodeResult
@@ -191,20 +191,20 @@ const isSQLNodeProxyResult = (value: unknown): value is SQLNodeProxyResult => {
   )
 }
 
-const isJSNodeProblemResult = (
+const isJSNodeExitResult = (
   value: unknown
-): value is JSNodeProblemResult<CommandDef> => {
-  const val = value as JSNodeProblemResult<CommandDef>
-  return val?.source === "js" && val?.payload?.__type__ === "problem_result"
+): value is JSNodeExitResult<CommandDef> => {
+  const val = value as JSNodeExitResult<CommandDef>
+  return val?.source === "js" && val?.payload?.__type__ === "exit_result"
 }
 
-const isSQLNodeProblemResult = (
+const isSQLNodeExitResult = (
   value: unknown
-): value is SQLNodeProblemResult<CommandDef> => {
-  const val = value as SQLNodeProblemResult<CommandDef>
+): value is SQLNodeExitResult<CommandDef> => {
+  const val = value as SQLNodeExitResult<CommandDef>
   return (
     typeof val?.success === "boolean" &&
-    val?.response?.items?.[0]?.__type__ === "problem_result"
+    val?.response?.items?.[0]?.__type__ === "exit_result"
   )
 }
 /* eslint-enable @typescript-eslint/no-unnecessary-condition, no-underscore-dangle */
@@ -298,13 +298,13 @@ export function JSNodeProxy({
      * If a problem result is detected, don't call the handler, just return the
      * result. It is expected that the next node's proxy would do the same.
      */
-    if (isJSNodeProblemResult(lastResult)) return lastResult
-    if (isSQLNodeProblemResult(lastResult)) {
+    if (isJSNodeExitResult(lastResult)) return lastResult
+    if (isSQLNodeExitResult(lastResult)) {
       // Normalize the wrapped result
       return {
         source: "js",
         payload: {
-          __type__: "problem_result",
+          __type__: "exit_result",
           error: {
             code: lastResult.response.items[0].error.code,
             message: lastResult.response.items[0].error.message
@@ -357,9 +357,9 @@ BEGIN
     CREATE TEMP TABLE __cmd_current_node_result AS
     SELECT * FROM cmd_utils.get_proxy_result(prev_node_result);
 
-  ELSIF cmd_utils.is_problem_result(prev_node_result) THEN
+  ELSIF cmd_utils.is_exit_result(prev_node_result) THEN
     CREATE TEMP TABLE __cmd_current_node_result AS
-    SELECT * FROM cmd_utils.get_problem_result(prev_node_result);
+    SELECT * FROM cmd_utils.get_exit_result(prev_node_result);
 
   ELSE CREATE TEMP TABLE __cmd_current_node_result AS
     SELECT * FROM pg_temp.${HANDLER_FUNCTION_NAME}(prev_node_result);
