@@ -99,7 +99,7 @@ type UnwrappedNodeExitResult<CmdDef extends CommandDef> =
     ? never
     : {
         __type__: "exit_result"
-        error: {
+        info: {
           code: CmdDef["exitCodes"][number]
           message: string
         }

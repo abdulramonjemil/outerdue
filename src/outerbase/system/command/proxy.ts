@@ -305,9 +305,9 @@ export function JSNodeProxy({
         source: "js",
         payload: {
           __type__: "exit_result",
-          error: {
-            code: lastResult.response.items[0].error.code,
-            message: lastResult.response.items[0].error.message
+          info: {
+            code: lastResult.response.items[0].info.code,
+            message: lastResult.response.items[0].info.message
           }
         }
       }

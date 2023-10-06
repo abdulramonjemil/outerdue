@@ -12,7 +12,7 @@ export const NODE_ONE: JSNodeHandler<typeof TestCommand, 0> = ({
   if (payload.a === "return_exit")
     return {
       __type__: "exit_result",
-      error: {
+      info: {
         code: "SOME_EXIT_CODE",
         message: `Triggered. Headers: ${JSON.stringify(headers)}`
       }
