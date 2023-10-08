@@ -245,7 +245,6 @@ export const defineCommand = <
     ? `${InterfaceDef["prefix"]}.`
     : ""}${Namespace}.${string}`,
   Method extends InterfaceDef["methods"][number],
-  // The boolean indicates whether the header is required or not
   Headers extends Record<string, boolean> | null,
   ExitCodes extends string[],
   PayloadValidator extends Method extends "GET" | "DELETE"

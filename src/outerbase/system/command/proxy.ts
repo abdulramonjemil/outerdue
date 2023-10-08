@@ -152,7 +152,7 @@ const getHeadersValidationInfo = (
   | { success: true; empty: false; values: Record<string, string | undefined> }
   | { success: false; missing: string[] } => {
   const { headers } = commandDefinition
-  if (headers === null) return { success: true, empty: true }
+  if (!headers) return { success: true, empty: true }
 
   const headerNames = Object.keys(headers)
   const headersObject: Record<string, string | undefined> = {}
@@ -194,17 +194,27 @@ const isSQLNodeProblemResult = (
   )
 }
 
+type CommandDefWithDefinedOrExitResult = Omit<CommandDef, "nodes"> & {
+  nodes: [JSNodeConfig]
+  exitCodes: [string]
+}
+
+type CommandDefWithAsyncDefinedOrExitResult = Omit<CommandDef, "nodes"> & {
+  nodes: [JSNodeConfig & { isAsync: true }]
+  exitCodes: [string]
+}
+
 const isJSNodeExitResult = (
   value: unknown
-): value is JSNodeExitResult<CommandDef> => {
-  const val = value as JSNodeExitResult<CommandDef>
+): value is JSNodeExitResult<CommandDefWithDefinedOrExitResult> => {
+  const val = value as JSNodeExitResult<CommandDefWithDefinedOrExitResult>
   return val?.source === "js" && val?.payload?.__type__ === "exit_result"
 }
 
 const isSQLNodeExitResult = (
   value: unknown
-): value is SQLNodeExitResult<CommandDef> => {
-  const val = value as SQLNodeExitResult<CommandDef>
+): value is SQLNodeExitResult<CommandDefWithDefinedOrExitResult> => {
+  const val = value as SQLNodeExitResult<CommandDefWithDefinedOrExitResult>
   return (
     typeof val?.success === "boolean" &&
     val?.response?.items?.[0]?.__type__ === "exit_result"
@@ -212,24 +222,16 @@ const isSQLNodeExitResult = (
 }
 /* eslint-enable @typescript-eslint/no-unnecessary-condition, no-underscore-dangle */
 
-type CommandDefWithJSNodeOnly = Omit<CommandDef, "nodes"> & {
-  nodes: [JSNodeConfig]
-}
-
-type CommandDefWithAsyncJSNodeOnly = Omit<CommandDef, "nodes"> & {
-  nodes: [JSNodeConfig & { isAsync: true }]
-}
-
 type HandlerReturn =
-  | JSNodeHandlerReturn<CommandDefWithJSNodeOnly, 0>
-  | JSNodeHandlerReturn<CommandDefWithAsyncJSNodeOnly, 0>
+  | JSNodeHandlerReturn<CommandDefWithDefinedOrExitResult, 0>
+  | JSNodeHandlerReturn<CommandDefWithAsyncDefinedOrExitResult, 0>
 
 type ProxyReturn =
   | JSNodeProblemResult
-  | JSNodeResult<JSNodeHandlerReturn<CommandDefWithJSNodeOnly, 0>>
+  | JSNodeResult<JSNodeHandlerReturn<CommandDefWithDefinedOrExitResult, 0>>
   | Promise<
       JSNodeResult<
-        Awaited<JSNodeHandlerReturn<CommandDefWithAsyncJSNodeOnly, 0>>
+        Awaited<JSNodeHandlerReturn<CommandDefWithAsyncDefinedOrExitResult, 0>>
       >
     >
 
