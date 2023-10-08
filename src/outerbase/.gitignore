@@ -1,2 +1,5 @@
 # Commands environment variables
 commands/.env
+
+# Generation output folder
+.generated
