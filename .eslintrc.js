@@ -23,6 +23,30 @@ module.exports = {
     "@typescript-eslint/consistent-type-definitions": ["error", "type"],
     "import/prefer-default-export": "off",
 
+    "lines-between-class-members": [
+      "error",
+      "always",
+      { exceptAfterSingleLine: true }
+    ],
+
+    "no-restricted-imports": [
+      "error",
+      {
+        patterns: [
+          {
+            group: ["../*"],
+            message:
+              "Don't use '..', please use typescript-style '@alias' import alias instead."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": "off",
+    "no-underscore-dangle": ["error", { allow: ["__type__"] }],
+    "arrow-parens": ["error", "always"],
+    semi: ["error", "never"],
+    quotes: ["error", "double"],
+
     "import/extensions": [
       "error",
       "always",
@@ -34,18 +58,7 @@ module.exports = {
       }
     ],
 
-    "import/no-unresolved": "error",
-    "lines-between-class-members": [
-      "error",
-      "always",
-      { exceptAfterSingleLine: true }
-    ],
-
-    "no-restricted-syntax": "off",
-    "no-underscore-dangle": ["error", { allow: ["__type__"] }],
-    "arrow-parens": ["error", "always"],
-    semi: ["error", "never"],
-    quotes: ["error", "double"]
+    "import/no-unresolved": "error"
   },
 
   root: true,
