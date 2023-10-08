@@ -91,7 +91,7 @@ function getParamValidationInfo(commandDefinition: CommandDef):
 const nodeNameToIndexer = (nodeName: string) =>
   nodeName.toLowerCase().replace(/ /g, "-")
 
-const getReturnProxyErrorResult = (
+const getFullProblemResult = (
   code: NodeProblemCode,
   message: string
 ): JSNodeProblemResult => ({
@@ -247,7 +247,7 @@ export function JSNodeProxy({
   const paramValidationInfo = getParamValidationInfo(commandDefinition)
 
   if (paramValidationInfo.status === "error") {
-    return getReturnProxyErrorResult(
+    return getFullProblemResult(
       "INVALID_BODY_OR_QUERY",
       `The request '${paramValidationInfo.paramType}' does not match the specified type`
     )
@@ -256,7 +256,7 @@ export function JSNodeProxy({
   const headersValidationInfo = getHeadersValidationInfo(commandDefinition)
 
   if (!headersValidationInfo.success) {
-    return getReturnProxyErrorResult(
+    return getFullProblemResult(
       "MISSING_REQUIRED_HEADERS",
       `The following headers are missing: ${headersValidationInfo.missing.join(
         ", "
@@ -270,7 +270,7 @@ export function JSNodeProxy({
   )
 
   if (!prevNodeResultsData.success) {
-    return getReturnProxyErrorResult(
+    return getFullProblemResult(
       "INTERNAL_PARSING_ERROR",
       `Could not determine the result of nodes '${prevNodeResultsData.faultyNodesNames.join(
         ", "
@@ -285,14 +285,14 @@ export function JSNodeProxy({
       prevNodeResultsData.results[prevNodeResultsData.results.length - 1]
 
     if (isJSNodeProblemResult(lastResult)) {
-      return getReturnProxyErrorResult(
+      return getFullProblemResult(
         lastResult.payload.error.code,
         lastResult.payload.error.message
       )
     }
 
     if (isSQLNodeProblemResult(lastResult)) {
-      return getReturnProxyErrorResult(
+      return getFullProblemResult(
         lastResult.response.items[0].error.code,
         lastResult.response.items[0].error.message
       )
