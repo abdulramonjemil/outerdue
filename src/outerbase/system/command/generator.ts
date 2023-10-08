@@ -88,7 +88,7 @@ const RollupTSPluginOptions: Parameters<typeof typescript>[0] = {
   }
 }
 
-const getBuildOptions = () => {
+const BUILD_OPTIONS = (() => {
   const options = [...process.argv].splice(2)
 
   const basenames = options
@@ -100,7 +100,7 @@ const getBuildOptions = () => {
   const minifyOutput = options.includes("--minify")
 
   return { commandBasenames: basenames, minifyOutput }
-}
+})()
 
 const logError = (...message: unknown[]) => {
   // eslint-disable-next-line no-console
@@ -229,7 +229,7 @@ const getJSNodeSrcString = async ({
     ]
   })
 
-  const { minifyOutput } = getBuildOptions()
+  const { minifyOutput } = BUILD_OPTIONS
 
   const code = await bundle
     .generate({
@@ -274,7 +274,7 @@ const getNodeFileName = (commandDefinition: CommandDef, nodeIndex: number) => {
   const { name, type } = commandDefinition.nodes[nodeIndex]
   const nodeNamePart = nodeNameToResultAccessorName(name)
 
-  const { minifyOutput } = getBuildOptions()
+  const { minifyOutput } = BUILD_OPTIONS
   const filename = `${filenamePrefix}.${nodeNamePart}.${
     minifyOutput && type === "js" ? "min.js" : type
   }`
@@ -486,7 +486,7 @@ const buildCommand = async (basename: string, envConfig: EnvConfig) => {
 
 const initializeCommandBuildProcess = async () => {
   const commandEnv = loadCommandsEnv()
-  const buildOptions = getBuildOptions()
+  const buildOptions = BUILD_OPTIONS
   const { commandBasenames } = buildOptions
 
   if (commandBasenames.length === 0) {

@@ -56,7 +56,7 @@ const RollupTSPluginOptions: Parameters<typeof typescript>[0] = {
   }
 }
 
-const getBuildOptions = () => {
+const BUILD_OPTIONS = (() => {
   const options = [...process.argv].splice(2)
   const pluginBasenames = options
     .filter((arg) => arg.startsWith("--plugin="))
@@ -64,7 +64,7 @@ const getBuildOptions = () => {
 
   const minifyOutput = options.includes("--minify")
   return { pluginBasenames, minifyOutput }
-}
+})()
 
 const getPluginSrcString = async (basename: string) => {
   const entryFile = path.join(
@@ -114,7 +114,7 @@ const getPluginStyles = async (basename: string, srcString: string) => {
     pluginStyleSheet
   )
 
-  const { minifyOutput } = getBuildOptions()
+  const { minifyOutput } = BUILD_OPTIONS
   if (minifyOutput) css = new CleanCSS().minify(css).styles
 
   return css
@@ -150,7 +150,7 @@ const insertOutputStyleSheet = (pluginSrc: string, styleSheet: string) => {
 }
 
 const writePluginToFile = async (basename: string, src: string) => {
-  const { minifyOutput } = getBuildOptions()
+  const { minifyOutput } = BUILD_OPTIONS
   const outputFileExtension = minifyOutput ? ".bundle.min.js" : ".bundle.js"
 
   const filePathToWrite = path.join(
@@ -163,7 +163,7 @@ const writePluginToFile = async (basename: string, src: string) => {
 }
 
 const finalizePluginSrc = async (srcString: string) => {
-  const { minifyOutput } = getBuildOptions()
+  const { minifyOutput } = BUILD_OPTIONS
 
   if (!minifyOutput) {
     const prettifiedSource = await format(srcString, {
@@ -189,7 +189,7 @@ const buildPlugin = async (basename: string) => {
 }
 
 const initializePluginBuildProcess = async () => {
-  const { pluginBasenames } = getBuildOptions()
+  const { pluginBasenames } = BUILD_OPTIONS
 
   if (pluginBasenames.length === 0) {
     throw new Error(
