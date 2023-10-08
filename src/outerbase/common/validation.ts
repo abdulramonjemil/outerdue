@@ -5,13 +5,13 @@ type KeyValidationScheme = Parameters<
 >[0]["body"]["scheme"]
 
 export async function validateKey<
-  InvalidKeyErrorCode extends string = "INVALID_API_KEY",
-  RequestIssueErrorCode extends string = "KEY_VALIDATION_ERROR"
+  InvalidKeyErrorCode extends string,
+  RequestIssueErrorCode extends string
 >({
   key,
   scheme,
-  onInvalidKey = "INVALID_API_KEY" as InvalidKeyErrorCode,
-  onRequestError = "KEY_VALIDATION_ERROR" as RequestIssueErrorCode
+  onInvalidKey,
+  onRequestError
 }: {
   key: string
   scheme: KeyValidationScheme
