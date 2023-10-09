@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build": "rimraf dist && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && bash ./fixup.sh",
     "eslint:check": "eslint ./ --ext .js,.jsx,.ts,.tsx",
     "eslint:fix": "eslint ./ --fix --ext .js,.jsx,.ts,.tsx",
     "outerbase:command:generator:compile": "rollup -i src/outerbase/system/command/generator.ts -o outerbase/dist/command.generator.js -f cjs -c src/outerbase/system/rollup.config.mjs",

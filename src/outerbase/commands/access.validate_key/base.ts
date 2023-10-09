@@ -1,7 +1,7 @@
 import {
   JSNodeHandlerDefinedSuccessResult,
   defineCommand
-} from "@/outerbase/system/command"
+} from "@/system/command"
 import { SampleCommandInterface } from "@/outerbase/commands/shared"
 import { $$type } from "@/lib/types"
 

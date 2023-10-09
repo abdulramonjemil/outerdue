@@ -1,4 +1,4 @@
-import { defineCommandInterface } from "@/outerbase/system/command"
+import { defineCommandInterface } from "@/system/command"
 
 export const SampleCommandInterface = defineCommandInterface({
   origin: "https://some-prefix.cmd.outerbase.io",

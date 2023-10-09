@@ -14,7 +14,7 @@ import { format } from "prettier"
 // ignore typescript's error of the file being a commonJS module and terser
 // being an ES module
 import { minify } from "terser"
-import { RAW_STRING_STYLE_SHEET_PLACEHOLDER } from "./base"
+import { RAW_STRING_STYLE_SHEET_PLACEHOLDER } from "@/system/plugin"
 
 // Current working directory should be the project's root directory
 const PLUGINS_PARENT_PATH = path.join(process.cwd(), "src/outerbase/plugins")

@@ -1,8 +1,4 @@
-import {
-  JSNodeHandler,
-  SQLNodeHandlerDefiner,
-  sql
-} from "@/outerbase/system/command"
+import { JSNodeHandler, SQLNodeHandlerDefiner, sql } from "@/system/command"
 import { type TestCommand } from "./base"
 
 export const NODE_ONE: JSNodeHandler<typeof TestCommand, 0> = ({

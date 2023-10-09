@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "outDir": "dist/cjs"
+  },
+  "extends": "./tsconfig.json",
+  "exclude": ["src/outerbase"],
+  "include": ["src"]
+}

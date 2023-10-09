@@ -11,7 +11,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 
-import { PluginCSSStyleSheet } from "@/outerbase/system/plugin/base"
+import { PluginCSSStyleSheet } from "@/system/plugin/base"
 
 export const Privileges = ["tableValue", "configuration"]
 

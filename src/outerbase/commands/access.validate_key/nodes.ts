@@ -1,4 +1,4 @@
-import { JSNodeHandler } from "@/outerbase/system/command"
+import { JSNodeHandler } from "@/system/command"
 import { OUTERBASE_CMD_SERVICE_KEY } from "@/outerbase/commands/env"
 import { KeyValidationCommand, type KeyValidationPayload } from "./base"
 

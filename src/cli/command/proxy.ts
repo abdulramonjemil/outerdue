@@ -1,8 +1,8 @@
 import { tryJSONParse } from "@/lib/parse"
 import type { GuardedType, JSONValue } from "@/lib/types"
 
-import { type CommandEndpointResult } from "./client"
 import {
+  type CommandEndpointResult,
   NodeProblemCode,
   tryCommandResultJSONParse,
   CommandDef,
@@ -11,10 +11,9 @@ import {
   SQLNodeExitResult,
   JSNodeConfig,
   JSNodeProblemResult,
-  JSNodeResult
-} from "./shared"
-
-import { JSNodeHandlerReturn } from "./server"
+  JSNodeResult,
+  JSNodeHandlerReturn
+} from "@/system/command"
 
 /**
  * These values are what outerbase compiles the {{request.*}} syntax and its

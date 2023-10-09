@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "outDir": "dist/esm"
+  },
+  "extends": "./tsconfig.json",
+  "exclude": ["src/cli", "src/outerbase"],
+  "include": ["src"]
+}

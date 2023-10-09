@@ -41,3 +41,6 @@ next-env.d.ts
 # Generated for outerbase
 /outerbase/**/*
 !/outerbase/README.md
+
+# Generated files
+/dist

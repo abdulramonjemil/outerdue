@@ -1,8 +1,5 @@
 import { $$type } from "@/lib/types"
-import {
-  JSNodeHandlerDefinedResult,
-  defineCommand
-} from "@/outerbase/system/command"
+import { JSNodeHandlerDefinedResult, defineCommand } from "@/system/command"
 
 import { SampleCommandInterface } from "@/outerbase/commands/shared"
 

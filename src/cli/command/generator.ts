@@ -15,9 +15,10 @@ import * as dotenv from "dotenv"
 import { rollup } from "rollup"
 import { format } from "prettier"
 import { rimraf } from "rimraf"
-import { type CommandDef } from "./shared"
+import { type CommandDef } from "@/system/command"
+import { RawSQLNodeHandlerDefiner } from "@/system/command"
+
 import { SQLNodeProxyDefiner } from "./proxy"
-import { RawSQLNodeHandlerDefiner } from "./server"
 
 const COMMANDS_PARENT_PATH = path.join(process.cwd(), "src/outerbase/commands")
 const COMMANDS_ENVIRONMENT_CONFIG_PATH = path.join(COMMANDS_PARENT_PATH, ".env")

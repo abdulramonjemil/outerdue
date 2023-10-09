@@ -5,6 +5,7 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.js",
+    "**/*.mjs",
     ".next/types/**/*.ts",
     ".eslintrc.js",
     ".kanelrc.js",
