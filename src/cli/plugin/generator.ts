@@ -101,17 +101,16 @@ const getPluginStyles = async (basename: string, srcString: string) => {
     content: [{ raw: srcString }]
   }
 
-  const pluginStyleSheet = fs.readFileSync(
-    path.join(
-      PLUGINS_PARENT_PATH,
-      basename,
-      PLUGIN_FILE_CONVENTIONS.STYLE_SHEET
-    ),
-    "utf-8"
+  const styleSheetPath = path.join(
+    PLUGINS_PARENT_PATH,
+    basename,
+    PLUGIN_FILE_CONVENTIONS.STYLE_SHEET
   )
+  const pluginStyleSheet = fs.readFileSync(styleSheetPath, "utf-8")
 
   let { css } = await postcss([tailwindcss(tailwindConfig)]).process(
-    pluginStyleSheet
+    pluginStyleSheet,
+    { from: styleSheetPath }
   )
 
   const { minifyOutput } = BUILD_OPTIONS
