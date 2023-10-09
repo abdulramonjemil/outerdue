@@ -1,9 +1,9 @@
 import {
+  $$type,
   JSNodeHandlerDefinedSuccessResult,
   defineCommand
 } from "@/system/command"
 import { SampleCommandInterface } from "@/outerbase/commands/shared"
-import { $$type } from "@/lib/types"
 
 /**
  * This is meant to be a union of strings. The following explains the available
