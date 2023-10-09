@@ -3,16 +3,15 @@
   "description": "A TypeScript-first system for working with Outerbase Web/Node.js project",
   "version": "0.1.0",
   "private": true,
+  "bin": {
+    "outerdue": "dist/cjs/cli/index.js"
+  },
   "scripts": {
-    "build": "rimraf dist && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && bash ./fixup.sh",
+    "build": "rimraf dist && npm run build:system && npm run build:cli",
+    "build:cli": "tsc -p tsconfig.cjs.json",
+    "build:system": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && bash ./fixup.sh",
     "eslint:check": "eslint ./ --ext .js,.jsx,.ts,.tsx",
     "eslint:fix": "eslint ./ --fix --ext .js,.jsx,.ts,.tsx",
-    "outerbase:command:generator:compile": "rollup -i src/outerbase/system/command/generator.ts -o outerbase/dist/command.generator.js -f cjs -c src/outerbase/system/rollup.config.mjs",
-    "outerbase:command:generator:exec": "npm run outerbase:command:generator:compile && npm run outerbase:command:generator:run",
-    "outerbase:command:generator:run": "node outerbase/dist/command.generator.js",
-    "outerbase:plugin:generator:compile": "rollup -i src/outerbase/system/plugin/generator.ts -o outerbase/dist/plugin.generator.js -f cjs -c src/outerbase/system/rollup.config.mjs",
-    "outerbase:plugin:generator:exec": "npm run outerbase:plugin:generator:compile && npm run outerbase:plugin:generator:run",
-    "outerbase:plugin:generator:run": "node outerbase/dist/plugin.generator.js",
     "prepare": "husky install",
     "prettier:check": "prettier --check .",
     "prettier:write": "prettier --write .",

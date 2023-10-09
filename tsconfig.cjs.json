@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
     "outDir": "dist/cjs"
   },
   "extends": "./tsconfig.json",
