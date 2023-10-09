@@ -1,6 +1,6 @@
 {
   "name": "outerdue",
-  "description": "A TypeScript-first system for working with Outerbase Web/Node.js project",
+  "description": "A full-fledged system for working with Outerbase in a JS/TS project",
   "version": "0.1.0",
   "private": true,
   "bin": {
