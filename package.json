@@ -1,5 +1,5 @@
 {
-  "name": "outerbase-due",
+  "name": "outerdue",
   "description": "A TypeScript-first system for working with Outerbase Web/Node.js project",
   "version": "0.1.0",
   "private": true,
