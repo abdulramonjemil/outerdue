@@ -34,8 +34,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# files generated for outerbase
-/outerbase
+# Generated for outerbase
+outerbase/.generated
+src/outerbase/.generated
 
 # Dist
 dist

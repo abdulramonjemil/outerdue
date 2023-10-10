@@ -7,28 +7,36 @@ import typescript from "rollup-plugin-typescript2"
 import replace from "@rollup/plugin-replace"
 import virtual from "@rollup/plugin-virtual"
 import terser from "@rollup/plugin-terser"
+import commonjs from "@rollup/plugin-commonjs"
 
 import * as dotenv from "dotenv"
 import { rollup } from "rollup"
 import { format } from "prettier"
 import { rimraf } from "rimraf"
-import { type CommandDef } from "@/system/command"
-import { RawSQLNodeHandlerDefiner } from "@/system/command"
+import type { CommandDef, RawSQLNodeHandlerDefiner } from "@/system/command"
+import { SHARED_CONSTANTS } from "@/cli/base"
 
+import type * as ProxyModule from "./proxy"
 import { SQLNodeProxyDefiner } from "./proxy"
 
-const COMMANDS_PARENT_PATH = path.join(process.cwd(), "src/outerbase/commands")
-const COMMANDS_ENVIRONMENT_CONFIG_PATH = path.join(COMMANDS_PARENT_PATH, ".env")
+const PATH_CONFIGS = (async () => {
+  const { OUTERBASE_PATH, GENERATED_FILES_PATH } = await SHARED_CONSTANTS
 
-const COMMANDS_OUTPUT_DIR = path.join(
-  process.cwd(),
-  "outerbase/generated/commands"
-)
+  const COMMANDS_PATH = path.join(OUTERBASE_PATH, "commands")
+  const COMMANDS_ENV_FILE_PATH = path.join(COMMANDS_PATH, ".env")
+  const COMMANDS_OUTPUT_PATH = path.join(GENERATED_FILES_PATH, "commands")
 
-const COMMANDS_PROXY_PATH = path.join(
-  process.cwd(),
-  "src/outerbase/system/command/proxy.ts"
-)
+  return {
+    COMMANDS_PATH,
+    COMMANDS_ENV_FILE_PATH,
+    COMMANDS_OUTPUT_PATH
+  }
+})()
+
+const PROXY_CONSTANTS = {
+  FILE_PATH: path.join(__dirname, "proxy.ts"),
+  EXPORT_ID: "JSNodeProxy" satisfies keyof typeof ProxyModule
+}
 
 const COMMAND_FILE_CONVENTIONS = {
   ENTRY_FILE: "main.ts",
@@ -40,7 +48,6 @@ const COMMAND_CODE_CONVENTIONS = {
 } as const
 
 const COMMAND_JS_NODE_CONSTANTS = {
-  PROXY_EXPORT_ID: "JSNodeProxy",
   PROXY_RESULT_EXPORT_ID: "__JS_NODE_FINAL_RESULT__",
   SRC_IIFE_VAR_NAME: "__JS_NODE_FULL_HANDLER_RESULT__"
 } as const
@@ -113,9 +120,11 @@ const logError = (...message: unknown[]) => {
   )
 }
 
-const loadCommandsEnv = () => {
+const loadCommandsEnv = async () => {
+  const { COMMANDS_ENV_FILE_PATH } = await PATH_CONFIGS
+
   const configOutput = dotenv.config({
-    path: COMMANDS_ENVIRONMENT_CONFIG_PATH,
+    path: COMMANDS_ENV_FILE_PATH,
     processEnv: {}
   })
 
@@ -126,8 +135,9 @@ const loadCommandsEnv = () => {
 }
 
 const loadCommandDefinition = async (basename: string) => {
+  const { COMMANDS_PATH } = await PATH_CONFIGS
   const entryFilePath = path
-    .join(COMMANDS_PARENT_PATH, basename, COMMAND_FILE_CONVENTIONS.ENTRY_FILE)
+    .join(COMMANDS_PATH, basename, COMMAND_FILE_CONVENTIONS.ENTRY_FILE)
     .replace(/\\/g, "/")
 
   const { COMMAND_DEFINITION_EXPORT_ID } = COMMAND_CODE_CONVENTIONS
@@ -177,19 +187,18 @@ const getJSNodeSrcString = async ({
   envConfig: EnvConfig
   nodeIndex: keyof CommandDef["nodes"] & number
 }) => {
+  const { COMMANDS_PATH } = await PATH_CONFIGS
   const commandEntryPath = path
-    .join(
-      COMMANDS_PARENT_PATH,
-      commandBasename,
-      COMMAND_FILE_CONVENTIONS.ENTRY_FILE
-    )
+    .join(COMMANDS_PATH, commandBasename, COMMAND_FILE_CONVENTIONS.ENTRY_FILE)
     .replace(/\\/g, "/")
 
+  const { FILE_PATH: COMMANDS_PROXY_PATH, EXPORT_ID: PROXY_EXPORT_ID } =
+    PROXY_CONSTANTS
   const commandsProxyPath = COMMANDS_PROXY_PATH.replace(/\\/g, "/")
 
   const nodeHandlerExportId = NODE_EXPORT_ID_CONVENTIONS_BY_INDEX[nodeIndex]
   const { COMMAND_DEFINITION_EXPORT_ID } = COMMAND_CODE_CONVENTIONS
-  const { PROXY_EXPORT_ID, PROXY_RESULT_EXPORT_ID, SRC_IIFE_VAR_NAME } =
+  const { PROXY_RESULT_EXPORT_ID, SRC_IIFE_VAR_NAME } =
     COMMAND_JS_NODE_CONSTANTS
 
   /**
@@ -223,6 +232,7 @@ const getJSNodeSrcString = async ({
         values: envReplacementMap
       }),
       nodeResolve(),
+      commonjs(),
       typescript(RollupTSPluginOptions)
     ]
   })
@@ -291,9 +301,10 @@ const writeNodeToFile = async ({
   nodeIndex: number
   srcString: string
 }) => {
+  const { COMMANDS_OUTPUT_PATH } = await PATH_CONFIGS
   const filename = getNodeFileName(commandDefinition, nodeIndex)
 
-  const outputDir = path.join(COMMANDS_OUTPUT_DIR, commandBasename)
+  const outputDir = path.join(COMMANDS_OUTPUT_PATH, commandBasename)
   const filePathToWrite = path.join(outputDir, filename)
 
   await fs.promises.mkdir(outputDir, { recursive: true })
@@ -309,12 +320,9 @@ const getSQLNodeSrcString = async ({
   commandDefinition: CommandDef
   nodeIndex: number
 }) => {
+  const { COMMANDS_PATH } = await PATH_CONFIGS
   const commandEntryPath = path
-    .join(
-      COMMANDS_PARENT_PATH,
-      commandBasename,
-      COMMAND_FILE_CONVENTIONS.ENTRY_FILE
-    )
+    .join(COMMANDS_PATH, commandBasename, COMMAND_FILE_CONVENTIONS.ENTRY_FILE)
     .replace(/\\/g, "/")
 
   const nodeHandlerDefinerExportId =
@@ -414,8 +422,9 @@ const writeNodeConfigToFile = async (
   commandBasename: string,
   commandDefinition: CommandDef
 ) => {
+  const { COMMANDS_OUTPUT_PATH } = await PATH_CONFIGS
   const { OUTPUT_JSON_CONFIG_FILE } = COMMAND_FILE_CONVENTIONS
-  const outputDir = path.join(COMMANDS_OUTPUT_DIR, commandBasename)
+  const outputDir = path.join(COMMANDS_OUTPUT_PATH, commandBasename)
   const outputFile = path.join(outputDir, OUTPUT_JSON_CONFIG_FILE)
   const content = {
     name: commandDefinition.name,
@@ -466,7 +475,8 @@ const buildCommand = async (basename: string, envConfig: EnvConfig) => {
     })
   )
 
-  const outputDir = path.join(COMMANDS_OUTPUT_DIR, basename)
+  const { COMMANDS_OUTPUT_PATH } = await PATH_CONFIGS
+  const outputDir = path.join(COMMANDS_OUTPUT_PATH, basename)
   await rimraf(outputDir)
 
   await Promise.all([
@@ -483,7 +493,7 @@ const buildCommand = async (basename: string, envConfig: EnvConfig) => {
 }
 
 const initializeCommandBuildProcess = async () => {
-  const commandEnv = loadCommandsEnv()
+  const commandEnv = await loadCommandsEnv()
   const buildOptions = BUILD_OPTIONS
   const { commandBasenames } = buildOptions
 

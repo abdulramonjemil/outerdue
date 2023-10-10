@@ -36,11 +36,11 @@ yarn-error.log*
 next-env.d.ts
 
 # Rollup generated
-/.rollup.cache
+.rollup.cache
 
 # Generated for outerbase
-/outerbase/**/*
-!/outerbase/README.md
+outerbase/.generated
+src/outerbase/.generated
 
 # Generated files
 /dist

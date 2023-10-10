@@ -15,23 +15,25 @@ import { format } from "prettier"
 // being an ES module
 import { minify } from "terser"
 import { RAW_STRING_STYLE_SHEET_PLACEHOLDER } from "@/system/plugin"
+import { SHARED_CONSTANTS } from "@/cli/base"
 
-// Current working directory should be the project's root directory
-const PLUGINS_PARENT_PATH = path.join(process.cwd(), "src/outerbase/plugins")
-const PLUGINS_TAILWIND_CONFIG_PATH = path.join(
-  PLUGINS_PARENT_PATH,
-  "tailwind.config.js"
-)
+const PATH_CONFIGS = (async () => {
+  const { OUTERBASE_PATH, GENERATED_FILES_PATH } = await SHARED_CONSTANTS
+
+  const PLUGINS_PATH = path.join(OUTERBASE_PATH, "plugins")
+  const PLUGINS_OUTPUT_DIR = path.join(GENERATED_FILES_PATH, "plugins")
+  const PLUGINS_TAILWIND_CONFIG_PATH = path.join(
+    PLUGINS_PATH,
+    "tailwind.config.js"
+  )
+
+  return { PLUGINS_PATH, PLUGINS_TAILWIND_CONFIG_PATH, PLUGINS_OUTPUT_DIR }
+})()
 
 const PLUGIN_FILE_CONVENTIONS = {
   ENTRY_FILE: "main.ts",
   STYLE_SHEET: "stylesheet.css"
 } as const
-
-const PLUGINS_OUTPUT_DIR = path.join(
-  process.cwd(),
-  "outerbase/generated/plugins"
-)
 
 const logError = (...message: unknown[]) => {
   // eslint-disable-next-line no-console
@@ -67,8 +69,9 @@ const BUILD_OPTIONS = (() => {
 })()
 
 const getPluginSrcString = async (basename: string) => {
+  const { PLUGINS_PATH } = await PATH_CONFIGS
   const entryFile = path.join(
-    PLUGINS_PARENT_PATH,
+    PLUGINS_PATH,
     basename,
     PLUGIN_FILE_CONVENTIONS.ENTRY_FILE
   )
@@ -92,6 +95,7 @@ const getPluginSrcString = async (basename: string) => {
 }
 
 const getPluginStyles = async (basename: string, srcString: string) => {
+  const { PLUGINS_PATH, PLUGINS_TAILWIND_CONFIG_PATH } = await PATH_CONFIGS
   const tailwindConfigImport = (await import(
     pathToFileURL(PLUGINS_TAILWIND_CONFIG_PATH).href
   )) as { default: Readonly<TailwindConfig> }
@@ -102,7 +106,7 @@ const getPluginStyles = async (basename: string, srcString: string) => {
   }
 
   const styleSheetPath = path.join(
-    PLUGINS_PARENT_PATH,
+    PLUGINS_PATH,
     basename,
     PLUGIN_FILE_CONVENTIONS.STYLE_SHEET
   )
@@ -152,6 +156,7 @@ const writePluginToFile = async (basename: string, src: string) => {
   const { minifyOutput } = BUILD_OPTIONS
   const outputFileExtension = minifyOutput ? ".bundle.min.js" : ".bundle.js"
 
+  const { PLUGINS_OUTPUT_DIR } = await PATH_CONFIGS
   const filePathToWrite = path.join(
     PLUGINS_OUTPUT_DIR,
     `${basename}${outputFileExtension}`
