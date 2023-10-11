@@ -130,7 +130,7 @@ export class OuterbasePluginTable_$PLUGIN_ID extends HTMLElement {
 
     this.shadow = this.attachShadow({ mode: "open" })
     this.shadow.appendChild(templateTable.content.cloneNode(true))
-    this.shadowRoot?.adoptedStyleSheets = [StyleSheet]
+    this.shadowRoot.adoptedStyleSheets = [StyleSheet]
   }
 
   connectedCallback() {

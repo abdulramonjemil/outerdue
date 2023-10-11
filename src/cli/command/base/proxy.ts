@@ -16,6 +16,8 @@ import type {
 
 import { tryCommandResultJSONParse } from "@/system/command"
 
+export const IMPORT_META_URL = import.meta.url
+
 /**
  * These values are what outerbase compiles the {{request.*}} syntax and its
  * like to.

@@ -13,11 +13,20 @@ import * as dotenv from "dotenv"
 import { rollup } from "rollup"
 import { format } from "prettier"
 import { rimraf } from "rimraf"
-import type { CommandDef, RawSQLNodeHandlerDefiner } from "@/system/command"
-import { SHARED_CONSTANTS } from "@/cli/base"
+import { fileURLToPath } from "url"
 
-import type * as ProxyModule from "./proxy"
-import { SQLNodeProxyDefiner } from "./proxy"
+import type { CommandDef, RawSQLNodeHandlerDefiner } from "@/system/command"
+import { SHARED_CONSTANTS, createErrorLogger, logMajorInfo } from "@/cli/base"
+
+import { SQLNodeProxyDefiner } from "./base/proxy"
+import type * as ProxyModule from "./base/proxy"
+
+/**
+ * This export is used in this file, but not directly. It is included here so
+ * that it is compiled too. We've also set `manualChunks` in rollup config so
+ * that the file is not inlined.
+ */
+export { JSNodeProxy } from "./base/proxy"
 
 const PATH_CONFIGS = (async () => {
   const { OUTERBASE_PATH, GENERATED_FILES_PATH } = await SHARED_CONSTANTS
@@ -34,7 +43,6 @@ const PATH_CONFIGS = (async () => {
 })()
 
 const PROXY_CONSTANTS = {
-  FILE_PATH: path.join(__dirname, "proxy.ts"),
   EXPORT_ID: "JSNodeProxy" satisfies keyof typeof ProxyModule
 }
 
@@ -45,11 +53,6 @@ const COMMAND_FILE_CONVENTIONS = {
 
 const COMMAND_CODE_CONVENTIONS = {
   COMMAND_DEFINITION_EXPORT_ID: "CommandDefinition"
-} as const
-
-const COMMAND_JS_NODE_CONSTANTS = {
-  PROXY_RESULT_EXPORT_ID: "__JS_NODE_FINAL_RESULT__",
-  SRC_IIFE_VAR_NAME: "__JS_NODE_FULL_HANDLER_RESULT__"
 } as const
 
 // Nodes have to be exported with these names from the entry
@@ -94,7 +97,7 @@ const RollupTSPluginOptions: Parameters<typeof typescript>[0] = {
 }
 
 const BUILD_OPTIONS = (() => {
-  const options = [...process.argv].splice(2)
+  const options = process.argv.slice(2)
 
   const basenames = options
     .filter((arg) => arg.startsWith("--cmd=") || arg.startsWith("--command="))
@@ -106,19 +109,6 @@ const BUILD_OPTIONS = (() => {
 
   return { commandBasenames: basenames, minifyOutput }
 })()
-
-const logError = (...message: unknown[]) => {
-  // eslint-disable-next-line no-console
-  console.error(
-    "---> Outerbase Command Generator Error:",
-    "\n\n",
-    "Plain error:",
-    ...message,
-    "\n\n",
-    "Error as string:",
-    ...message.map((val) => String(val))
-  )
-}
 
 const loadCommandsEnv = async () => {
   const { COMMANDS_ENV_FILE_PATH } = await PATH_CONFIGS
@@ -154,6 +144,7 @@ const loadCommandDefinition = async (basename: string) => {
         __entry__: commandDefSrc
       }),
       nodeResolve(),
+      commonjs(),
       typescript(RollupTSPluginOptions)
     ]
   })
@@ -192,14 +183,22 @@ const getJSNodeSrcString = async ({
     .join(COMMANDS_PATH, commandBasename, COMMAND_FILE_CONVENTIONS.ENTRY_FILE)
     .replace(/\\/g, "/")
 
-  const { FILE_PATH: COMMANDS_PROXY_PATH, EXPORT_ID: PROXY_EXPORT_ID } =
-    PROXY_CONSTANTS
-  const commandsProxyPath = COMMANDS_PROXY_PATH.replace(/\\/g, "/")
+  const { EXPORT_ID: PROXY_EXPORT_ID } = PROXY_CONSTANTS
+
+  /**
+   * Although we're using dynamic import here, this file is expected to be
+   * bundled with rollup so since we're already importing from it, the import
+   * below will be replaced if necessary.
+   */
+  const commandsProxyPath = fileURLToPath(
+    (await import("./base/proxy")).IMPORT_META_URL
+  ).replace(/\\/g, "/")
 
   const nodeHandlerExportId = NODE_EXPORT_ID_CONVENTIONS_BY_INDEX[nodeIndex]
   const { COMMAND_DEFINITION_EXPORT_ID } = COMMAND_CODE_CONVENTIONS
-  const { PROXY_RESULT_EXPORT_ID, SRC_IIFE_VAR_NAME } =
-    COMMAND_JS_NODE_CONSTANTS
+
+  const PROXY_RESULT_EXPORT_ID = "__JS_NODE_FINAL_RESULT__"
+  const SRC_IIFE_VAR_NAME = "__JS_NODE_FULL_HANDLER_RESULT__"
 
   /**
    * The paramters taken by JSNodeProxy can be seen in the definition
@@ -343,6 +342,7 @@ const getSQLNodeSrcString = async ({
         __entry__: nodeCompilationInputSrc
       }),
       nodeResolve(),
+      commonjs(),
       typescript(RollupTSPluginOptions)
     ]
   })
@@ -492,7 +492,7 @@ const buildCommand = async (basename: string, envConfig: EnvConfig) => {
   ])
 }
 
-const initializeCommandBuildProcess = async () => {
+const RunOuterdueCommandBuildProcess = async () => {
   const commandEnv = await loadCommandsEnv()
   const buildOptions = BUILD_OPTIONS
   const { commandBasenames } = buildOptions
@@ -514,13 +514,14 @@ const initializeCommandBuildProcess = async () => {
   )
 }
 
-initializeCommandBuildProcess()
-  .then(() => {
-    // eslint-disable-next-line no-console
-    console.log("------------->", "Command Generated Successfully")
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const OUTERDUE_COMMAND_BUILD__CMD_RUNNER = async () => {
+  try {
+    await RunOuterdueCommandBuildProcess()
+    logMajorInfo("Command Build Process Successful")
     process.exit(0)
-  })
-  .catch((error) => {
-    logError(error)
+  } catch (error) {
+    createErrorLogger("Command Build Error")(error)
     process.exit(1)
-  })
+  }
+}

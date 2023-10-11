@@ -10,12 +10,10 @@ import typescript from "rollup-plugin-typescript2"
 import nodeResolve from "@rollup/plugin-node-resolve"
 import CleanCSS from "clean-css"
 import { format } from "prettier"
-// @ts-expect-error Rollup processes this file successfully, so it's fine to
-// ignore typescript's error of the file being a commonJS module and terser
-// being an ES module
 import { minify } from "terser"
 import { RAW_STRING_STYLE_SHEET_PLACEHOLDER } from "@/system/plugin"
-import { SHARED_CONSTANTS } from "@/cli/base"
+import { SHARED_CONSTANTS, createErrorLogger, logMajorInfo } from "@/cli/base"
+import commonjs from "@rollup/plugin-commonjs"
 
 const PATH_CONFIGS = (async () => {
   const { OUTERBASE_PATH, GENERATED_FILES_PATH } = await SHARED_CONSTANTS
@@ -35,19 +33,6 @@ const PLUGIN_FILE_CONVENTIONS = {
   STYLE_SHEET: "stylesheet.css"
 } as const
 
-const logError = (...message: unknown[]) => {
-  // eslint-disable-next-line no-console
-  console.error(
-    "---> Outerbase Plugin Generator Error:",
-    "\n\n",
-    "Plain error:",
-    ...message,
-    "\n\n",
-    "Error as string:",
-    ...message.map((val) => String(val))
-  )
-}
-
 const RollupTSPluginOptions: Parameters<typeof typescript>[0] = {
   check: false,
   clean: true,
@@ -59,7 +44,7 @@ const RollupTSPluginOptions: Parameters<typeof typescript>[0] = {
 }
 
 const BUILD_OPTIONS = (() => {
-  const options = [...process.argv].splice(2)
+  const options = process.argv.slice(2)
   const pluginBasenames = options
     .filter((arg) => arg.startsWith("--plugin="))
     .map((arg) => arg.substring("--plugin=".length))
@@ -78,7 +63,7 @@ const getPluginSrcString = async (basename: string) => {
 
   const bundle = await rollup({
     input: entryFile,
-    plugins: [typescript(RollupTSPluginOptions), nodeResolve()]
+    plugins: [nodeResolve(), commonjs(), typescript(RollupTSPluginOptions)]
   })
 
   const code = await bundle.generate({}).then((output) => output.output[0].code)
@@ -192,7 +177,7 @@ const buildPlugin = async (basename: string) => {
   await writePluginToFile(basename, finalSource)
 }
 
-const initializePluginBuildProcess = async () => {
+const RunOuterduePluginBuildProcess = async () => {
   const { pluginBasenames } = BUILD_OPTIONS
 
   if (pluginBasenames.length === 0) {
@@ -210,15 +195,14 @@ const initializePluginBuildProcess = async () => {
   await Promise.all(pluginBasenames.map((basename) => buildPlugin(basename)))
 }
 
-initializePluginBuildProcess()
-  .then(() => {
-    // eslint-disable-next-line no-console
-    console.log("------------->", "Plugin Generated Successfully")
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const OUTERDUE_PLUGIN_BUILD__CMD_RUNNER = async () => {
+  try {
+    await RunOuterduePluginBuildProcess()
+    logMajorInfo("Plugin Build Process Successful")
     process.exit(0)
-  })
-  .catch((error) => {
-    logError(error)
+  } catch (error) {
+    createErrorLogger("Plugin Build Error")(error)
     process.exit(1)
-  })
-
-export {}
+  }
+}

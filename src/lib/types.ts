@@ -6,15 +6,15 @@ export type If<
 > = Condition extends true ? T1 : Condition extends false ? T2 : T3
 
 export type DeepPartial<T> = {
-  [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
+  [K in keyof T]?: DeepPartial<T[K]>
 }
 
 export type DeepRequired<T> = {
-  [K in keyof T]-?: T[K] extends object | undefined
-    ? T[K] extends undefined
-      ? undefined
-      : DeepRequired<T[K]>
-    : T[K]
+  [K in keyof T]-?: DeepRequired<T[K]>
+}
+
+export type Mutable<T> = {
+  -readonly [K in keyof T]: Mutable<T[K]>
 }
 
 export type IsSameType<T1, T2> = [T1] extends [T2]

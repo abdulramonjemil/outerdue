@@ -120,7 +120,7 @@ export class OuterbasePluginTableConfiguration_$PLUGIN_ID extends HTMLElement {
     // styles from the parent page from leaking into our plugin.
     this.shadow = this.attachShadow({ mode: "open" })
     this.shadow.appendChild(templateConfiguration.content.cloneNode(true))
-    this.shadow?.adoptedStyleSheets = [StyleSheet]
+    this.shadow.adoptedStyleSheets = [StyleSheet]
   }
 
   connectedCallback() {

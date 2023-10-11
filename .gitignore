@@ -44,3 +44,6 @@ src/outerbase/.generated
 
 # Generated files
 /dist
+
+# Types generated for publishing
+types
