@@ -6,7 +6,7 @@ import tailwindcss, { type Config as TailwindConfig } from "tailwindcss"
 import { rollup } from "rollup"
 import { pathToFileURL } from "url"
 
-import typescript from "rollup-plugin-typescript2"
+import typescript from "@rollup/plugin-typescript"
 import nodeResolve from "@rollup/plugin-node-resolve"
 import CleanCSS from "clean-css"
 import { format } from "prettier"
@@ -33,16 +33,6 @@ const PLUGIN_FILE_CONVENTIONS = {
   STYLE_SHEET: "stylesheet.css"
 } as const
 
-const RollupTSPluginOptions: Parameters<typeof typescript>[0] = {
-  check: false,
-  clean: true,
-  tsconfigOverride: {
-    compilerOptions: {
-      module: "esnext"
-    }
-  }
-}
-
 const BUILD_OPTIONS = (() => {
   const options = process.argv.slice(2)
   const pluginBasenames = options
@@ -52,6 +42,16 @@ const BUILD_OPTIONS = (() => {
   const minifyOutput = options.includes("--minify")
   return { pluginBasenames, minifyOutput }
 })()
+
+const getRollupTSPlugin = () =>
+  typescript({
+    outputToFilesystem: true,
+    compilerOptions: {
+      declaration: false,
+      module: "esnext",
+      moduleResolution: "bundler"
+    }
+  })
 
 const getPluginSrcString = async (basename: string) => {
   const { PLUGINS_PATH } = await PATH_CONFIGS
@@ -63,7 +63,7 @@ const getPluginSrcString = async (basename: string) => {
 
   const bundle = await rollup({
     input: entryFile,
-    plugins: [nodeResolve(), commonjs(), typescript(RollupTSPluginOptions)]
+    plugins: [nodeResolve(), commonjs(), getRollupTSPlugin()]
   })
 
   const code = await bundle.generate({}).then((output) => output.output[0].code)

@@ -86,7 +86,7 @@ const NODE_INDEX_TO_TEXT_MAP = [
 
 type EnvConfig = Record<string, string>
 
-const getRollupTSPluginConfig = () =>
+const getRollupTSPlugin = () =>
   typescript({
     outputToFilesystem: true,
     compilerOptions: {
@@ -145,7 +145,7 @@ const loadCommandDefinition = async (basename: string) => {
       }),
       nodeResolve(),
       commonjs(),
-      getRollupTSPluginConfig()
+      getRollupTSPlugin()
     ]
   })
 
@@ -232,7 +232,7 @@ const getJSNodeSrcString = async ({
       }),
       nodeResolve(),
       commonjs(),
-      getRollupTSPluginConfig()
+      getRollupTSPlugin()
     ]
   })
 
@@ -343,7 +343,7 @@ const getSQLNodeSrcString = async ({
       }),
       nodeResolve(),
       commonjs(),
-      getRollupTSPluginConfig()
+      getRollupTSPlugin()
     ]
   })
 
