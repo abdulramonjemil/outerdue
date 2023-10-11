@@ -12,11 +12,11 @@ import CleanCSS from "clean-css"
 import { format } from "prettier"
 import { minify } from "terser"
 import { RAW_STRING_STYLE_SHEET_PLACEHOLDER } from "@/system/plugin"
-import { SHARED_CONSTANTS, createErrorLogger, logMajorInfo } from "@/cli/base"
+import { getSharedConstants, createErrorLogger, logMajorInfo } from "@/cli/base"
 import commonjs from "@rollup/plugin-commonjs"
 
 const PATH_CONFIGS = (async () => {
-  const { OUTERBASE_PATH, GENERATED_FILES_PATH } = await SHARED_CONSTANTS
+  const { OUTERBASE_PATH, GENERATED_FILES_PATH } = await getSharedConstants()
 
   const PLUGINS_PATH = path.join(OUTERBASE_PATH, "plugins")
   const PLUGINS_OUTPUT_DIR = path.join(GENERATED_FILES_PATH, "plugins")

@@ -16,7 +16,7 @@ import { rimraf } from "rimraf"
 import { fileURLToPath } from "url"
 
 import type { CommandDef, RawSQLNodeHandlerDefiner } from "@/system/command"
-import { SHARED_CONSTANTS, createErrorLogger, logMajorInfo } from "@/cli/base"
+import { getSharedConstants, createErrorLogger, logMajorInfo } from "@/cli/base"
 
 import { SQLNodeProxyDefiner } from "./base/proxy"
 import type * as ProxyModule from "./base/proxy"
@@ -29,7 +29,7 @@ import type * as ProxyModule from "./base/proxy"
 export { JSNodeProxy } from "./base/proxy"
 
 const PATH_CONFIGS = (async () => {
-  const { OUTERBASE_PATH, GENERATED_FILES_PATH } = await SHARED_CONSTANTS
+  const { OUTERBASE_PATH, GENERATED_FILES_PATH } = await getSharedConstants()
 
   const COMMANDS_PATH = path.join(OUTERBASE_PATH, "commands")
   const COMMANDS_ENV_FILE_PATH = path.join(COMMANDS_PATH, ".env")

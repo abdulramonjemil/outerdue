@@ -20,7 +20,8 @@ export type OuterdueConfig = DeepPartial<{
   }
 }>
 
-export const OUTERDUE_CONFIG_OPTIONS = (async () => {
+// eslint-disable-next-line no-underscore-dangle, @typescript-eslint/naming-convention
+const __getOuterdueConfigOptions = async () => {
   const possibleConfigFilePath = path.join(
     process.cwd(),
     CONFIG_FILE_NAME_CONVENTION
@@ -60,10 +61,21 @@ export const OUTERDUE_CONFIG_OPTIONS = (async () => {
       }
     }
   } satisfies DeepRequired<OuterdueConfig>
-})()
+}
 
-export const SHARED_CONSTANTS = (async () => {
-  const { rootDir } = await OUTERDUE_CONFIG_OPTIONS
+const OUTERDUE_CONFIG_OPTIONS: {
+  value: ReturnType<typeof __getOuterdueConfigOptions> | null
+} = { value: null }
+
+export const getOuterdueConfigOptions = async () => {
+  if (!OUTERDUE_CONFIG_OPTIONS.value)
+    OUTERDUE_CONFIG_OPTIONS.value = __getOuterdueConfigOptions()
+  return OUTERDUE_CONFIG_OPTIONS.value
+}
+
+// eslint-disable-next-line no-underscore-dangle, @typescript-eslint/naming-convention
+const __getSharedConstants = async () => {
+  const { rootDir } = await getOuterdueConfigOptions()
   const OUTERBASE_PATH = path.join(
     process.cwd(),
     rootDir ? "outerbase" : "src/outerbase"
@@ -71,7 +83,16 @@ export const SHARED_CONSTANTS = (async () => {
 
   const GENERATED_FILES_PATH = path.join(OUTERBASE_PATH, ".generated")
   return { OUTERBASE_PATH, GENERATED_FILES_PATH }
-})()
+}
+
+const SHARED_CONSTANTS: {
+  value: ReturnType<typeof __getSharedConstants> | null
+} = { value: null }
+
+export const getSharedConstants = async () => {
+  if (!SHARED_CONSTANTS.value) SHARED_CONSTANTS.value = __getSharedConstants()
+  return SHARED_CONSTANTS.value
+}
 
 type CLIOptionTypeMap = {
   boolean: boolean
