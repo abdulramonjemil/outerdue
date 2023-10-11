@@ -64,12 +64,12 @@ const __getOuterdueConfigOptions = async () => {
 }
 
 const OUTERDUE_CONFIG_OPTIONS: {
-  value: ReturnType<typeof __getOuterdueConfigOptions> | null
+  value: Awaited<ReturnType<typeof __getOuterdueConfigOptions>> | null
 } = { value: null }
 
 export const getOuterdueConfigOptions = async () => {
   if (!OUTERDUE_CONFIG_OPTIONS.value)
-    OUTERDUE_CONFIG_OPTIONS.value = __getOuterdueConfigOptions()
+    OUTERDUE_CONFIG_OPTIONS.value = await __getOuterdueConfigOptions()
   return OUTERDUE_CONFIG_OPTIONS.value
 }
 
@@ -86,11 +86,12 @@ const __getSharedConstants = async () => {
 }
 
 const SHARED_CONSTANTS: {
-  value: ReturnType<typeof __getSharedConstants> | null
+  value: Awaited<ReturnType<typeof __getSharedConstants>> | null
 } = { value: null }
 
 export const getSharedConstants = async () => {
-  if (!SHARED_CONSTANTS.value) SHARED_CONSTANTS.value = __getSharedConstants()
+  if (!SHARED_CONSTANTS.value)
+    SHARED_CONSTANTS.value = await __getSharedConstants()
   return SHARED_CONSTANTS.value
 }
 
