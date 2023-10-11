@@ -16,7 +16,15 @@ import type {
 
 import { tryCommandResultJSONParse } from "@/system/command"
 
-export const IMPORT_META_URL = import.meta.url
+/**
+ * This is placed inside a function and not used directly because rollup
+ * compiles it to some function calls when it is used in another module, and
+ * that prevents tree shaking. Also, the expression to which rollup compiles it
+ * to contains a reference to `document` (a check) but Outerbase TS setting for
+ * JS nodes prevents the use of `document`.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const compilation_only_getImportMetaURL = () => import.meta.url
 
 /**
  * These values are what outerbase compiles the {{request.*}} syntax and its

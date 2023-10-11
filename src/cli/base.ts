@@ -3,7 +3,7 @@ import fs from "fs"
 import path from "path"
 
 const CONFIG_FILE_NAME_CONVENTION = "outerdue.config.js"
-const CLI_COMMAND_REGEX = /^[a-z]+(-[a-z]+)*$/
+const CLI_STANDALONE_COMMAND_REGEX = /^[a-z]+(-[a-z]+)*$/
 
 export type OuterdueConfig = DeepPartial<{
   rootDir: boolean
@@ -92,6 +92,7 @@ type CLIOptionsValues<OptionsConfig extends Record<string, CLIOptionConfig>> = {
 }
 
 const isSetterCLIOption = (option: string) => option.startsWith("-")
+/** `@` is used to escape strings i.e force it to not be treated as a setter */
 const getCLIOptionAsNonSetterString = (option: string) =>
   option.startsWith("@") ? option.substring(1) : option
 
@@ -117,7 +118,7 @@ export const getPassedSubcommand = (command: string) => {
   if (
     !potentialSubcommad ||
     isSetterCLIOption(potentialSubcommad) ||
-    !CLI_COMMAND_REGEX.test(potentialSubcommad)
+    !CLI_STANDALONE_COMMAND_REGEX.test(potentialSubcommad)
   ) {
     return null
   }

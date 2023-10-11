@@ -2,7 +2,7 @@ import path from "path"
 import fs from "fs"
 
 import nodeResolve from "@rollup/plugin-node-resolve"
-import typescript from "rollup-plugin-typescript2"
+import typescript from "@rollup/plugin-typescript"
 
 import replace from "@rollup/plugin-replace"
 import virtual from "@rollup/plugin-virtual"
@@ -86,15 +86,15 @@ const NODE_INDEX_TO_TEXT_MAP = [
 
 type EnvConfig = Record<string, string>
 
-const RollupTSPluginOptions: Parameters<typeof typescript>[0] = {
-  check: false,
-  clean: true,
-  tsconfigOverride: {
+const getRollupTSPluginConfig = () =>
+  typescript({
+    outputToFilesystem: true,
     compilerOptions: {
-      module: "esnext"
+      declaration: false,
+      module: "esnext",
+      moduleResolution: "bundler"
     }
-  }
-}
+  })
 
 const BUILD_OPTIONS = (() => {
   const options = process.argv.slice(2)
@@ -145,7 +145,7 @@ const loadCommandDefinition = async (basename: string) => {
       }),
       nodeResolve(),
       commonjs(),
-      typescript(RollupTSPluginOptions)
+      getRollupTSPluginConfig()
     ]
   })
 
@@ -191,7 +191,7 @@ const getJSNodeSrcString = async ({
    * below will be replaced if necessary.
    */
   const commandsProxyPath = fileURLToPath(
-    (await import("./base/proxy")).IMPORT_META_URL
+    (await import("./base/proxy")).compilation_only_getImportMetaURL()
   ).replace(/\\/g, "/")
 
   const nodeHandlerExportId = NODE_EXPORT_ID_CONVENTIONS_BY_INDEX[nodeIndex]
@@ -232,7 +232,7 @@ const getJSNodeSrcString = async ({
       }),
       nodeResolve(),
       commonjs(),
-      typescript(RollupTSPluginOptions)
+      getRollupTSPluginConfig()
     ]
   })
 
@@ -343,7 +343,7 @@ const getSQLNodeSrcString = async ({
       }),
       nodeResolve(),
       commonjs(),
-      typescript(RollupTSPluginOptions)
+      getRollupTSPluginConfig()
     ]
   })
 
