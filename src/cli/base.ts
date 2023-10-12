@@ -101,13 +101,15 @@ type CLIOptionTypeMap = {
   string: string
 }
 
-type CLIOptionConfig = {
+type CLINamedOptionConfig = {
   type: keyof CLIOptionTypeMap
   required: boolean
   short?: string
 }
 
-type CLIOptionsValues<OptionsConfig extends Record<string, CLIOptionConfig>> = {
+type CLIOptionsValues<
+  OptionsConfig extends Record<string, CLINamedOptionConfig>
+> = {
   [K in keyof OptionsConfig]:
     | CLIOptionTypeMap[OptionsConfig[K]["type"]]
     | (OptionsConfig[K]["required"] extends true ? never : undefined)
@@ -164,10 +166,10 @@ export const getPassedSubcommand = (command: string) => {
   return potentialSubcommad
 }
 
-export type CommandOptionsConfig = Record<string, CLIOptionConfig>
+export type CLICommandNamedOptionsConfig = Record<string, CLINamedOptionConfig>
 
 export const parseCommandCLINamedOptions = <
-  OptionsConfig extends CommandOptionsConfig
+  OptionsConfig extends CLICommandNamedOptionsConfig
 >({
   offset,
   options
