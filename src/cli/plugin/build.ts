@@ -3,6 +3,7 @@ import path from "path"
 import postcss from "postcss"
 
 import tailwindcss, { type Config as TailwindConfig } from "tailwindcss"
+import atImport from "postcss-import"
 import { rollup } from "rollup"
 import { pathToFileURL } from "url"
 
@@ -118,10 +119,10 @@ const getPluginStyles = async (basename: string, srcString: string) => {
   )
   const pluginStyleSheet = fs.readFileSync(styleSheetPath, "utf-8")
 
-  let { css } = await postcss([tailwindcss(tailwindConfig)]).process(
-    pluginStyleSheet,
-    { from: styleSheetPath }
-  )
+  let { css } = await postcss([
+    atImport(),
+    tailwindcss(tailwindConfig)
+  ]).process(pluginStyleSheet, { from: styleSheetPath })
 
   const { minifyOutput } = await BUILD_OPTIONS
   if (minifyOutput) css = new CleanCSS().minify(css).styles

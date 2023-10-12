@@ -15,7 +15,6 @@ export type OuterdueConfig = DeepPartial<{
     minify: boolean
     stylesheet: {
       tailwind: boolean
-      imports: boolean
     }
   }
 }>
@@ -56,8 +55,7 @@ const __getOuterdueConfigOptions = async () => {
     plugin: {
       minify: plugin?.minify ?? true,
       stylesheet: {
-        tailwind: plugin?.stylesheet?.tailwind ?? true,
-        imports: plugin?.stylesheet?.imports ?? false
+        tailwind: plugin?.stylesheet?.tailwind ?? true
       }
     }
   } satisfies DeepRequired<OuterdueConfig>
