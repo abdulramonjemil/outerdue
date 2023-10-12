@@ -23,9 +23,9 @@
     }
   },
   "scripts": {
-    "build": "npm run build:values && npm run build:types",
+    "build": "rimraf dist && npm run build:values && npm run build:types",
     "build:values": "rollup -c --bundleConfigAsCjs",
-    "build:types": "tsc -p tsconfig.types.json && tsc-alias -p tsconfig.types.json",
+    "build:types": "rimraf types && tsc -p tsconfig.types.json && tsc-alias -p tsconfig.types.json",
     "build:watch": "npm run build:values -- -w",
     "eslint:check": "eslint ./ --ext .js,.jsx,.ts,.tsx",
     "eslint:fix": "eslint ./ --fix --ext .js,.jsx,.ts,.tsx",
