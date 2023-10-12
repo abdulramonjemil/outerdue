@@ -148,7 +148,9 @@ const getCommandCLINamedOptionsArgvOffset = (command: string) => {
 export const getCommandCLIUnnamedOptions = (command: string) => {
   const startIndex = getCommandCLIArgsArgvOffset(command)
   const endIndex = getCommandCLINamedOptionsArgvOffset(command)
-  return process.argv.slice(startIndex, endIndex)
+  return process.argv
+    .slice(startIndex, endIndex)
+    .map((option) => getCLIOptionAsNonSetterString(option))
 }
 
 const getCommandRawCLIArgs = (command: string) =>
