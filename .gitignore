@@ -47,3 +47,6 @@ src/outerbase/.generated
 
 # Types generated for publishing
 types
+
+# NPM tarballs
+outerdue-*.tgz
