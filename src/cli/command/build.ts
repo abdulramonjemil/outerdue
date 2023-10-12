@@ -92,7 +92,7 @@ const NODE_INDEX_TO_TEXT_MAP = [
   "tenth node"
 ]
 
-type EnvConfig = Record<string, string>
+type EnvConfig = Record<string, string> | null
 
 const getRollupTSPlugin = () =>
   typescript({
@@ -106,7 +106,8 @@ const getRollupTSPlugin = () =>
 
 const COMMAND_BUILD_COMMAND_CLI_INPUT = "outerdue command build"
 const CommandBuildCommandNamedOptions = defineCommandCLINamedOptions({
-  minify: { type: "boolean", required: false, short: "m" }
+  minify: { type: "boolean", required: false, short: "m" },
+  env: { type: "boolean", required: false, short: "e" }
 })
 
 const BUILD_OPTIONS = (async () => {
@@ -121,8 +122,10 @@ const BUILD_OPTIONS = (async () => {
 
   const minifyOutput =
     namedOptionsParseResult.minify ?? outerdueConfigOptions.command.minify
+  const parseEnv =
+    namedOptionsParseResult.env ?? outerdueConfigOptions.command.env
 
-  return { commandBasenames: basenames, minifyOutput }
+  return { commandBasenames: basenames, minifyOutput, parseEnv }
 })()
 
 const loadCommandsEnv = async () => {
@@ -134,8 +137,9 @@ const loadCommandsEnv = async () => {
   })
 
   if (configOutput.error) throw configOutput.error
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const parsedConfig = configOutput.parsed!
+  if (!configOutput.parsed) throw new Error("Failed to load env")
+
+  const parsedConfig = configOutput.parsed
   return parsedConfig
 }
 
@@ -231,8 +235,15 @@ const getJSNodeSrcString = async ({
   `
 
   const envReplacementMap = {} as Record<string, string>
-  Object.keys(envConfig).forEach((key) => {
-    envReplacementMap[`process.env.${key}`] = JSON.stringify(envConfig[key])
+  if (envConfig) {
+    Object.keys(envConfig).forEach((key) => {
+      envReplacementMap[`process.env.${key}`] = JSON.stringify(envConfig[key])
+    })
+  }
+
+  const envReplacerPlugin = replace({
+    preventAssignment: true,
+    values: envReplacementMap
   })
 
   const bundle = await rollup({
@@ -241,10 +252,7 @@ const getJSNodeSrcString = async ({
       virtual({
         __entry__: nodeCompilationInputSrc
       }),
-      replace({
-        preventAssignment: true,
-        values: envReplacementMap
-      }),
+      ...(envConfig ? [envReplacerPlugin] : []),
       nodeResolve(),
       commonjs(),
       getRollupTSPlugin()
@@ -513,8 +521,8 @@ const buildCommand = async (basename: string, envConfig: EnvConfig) => {
 }
 
 const RunOuterdueCommandBuildProcess = async () => {
-  const commandEnv = await loadCommandsEnv()
   const buildOptions = await BUILD_OPTIONS
+  const commandEnv = buildOptions.parseEnv ? await loadCommandsEnv() : null
   const { commandBasenames } = buildOptions
 
   if (commandBasenames.length === 0) {
