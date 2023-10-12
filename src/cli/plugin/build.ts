@@ -44,7 +44,10 @@ const PLUGIN_FILE_CONVENTIONS = {
 
 const PLUGIN_BUILD_COMMAND_CLI_INPUT = "outerdue plugin build"
 const PluginBuildCommandNamedOptions = defineCommandCLINamedOptions({
-  minify: { type: "boolean", required: false, short: "m" }
+  minify: { type: "boolean", required: false, short: "m" },
+  stylesheet: { type: "boolean", required: false, short: "s" },
+  // `tw` is short for tailwind
+  tw: { type: "boolean", required: false }
 })
 
 const BUILD_OPTIONS = (async () => {
@@ -61,8 +64,14 @@ const BUILD_OPTIONS = (async () => {
 
   const minifyOutput =
     namedOptionsParseResult.minify ?? outerdueConfigOptions.plugin.minify
+  const parseStyleSheet =
+    namedOptionsParseResult.stylesheet ??
+    Boolean(outerdueConfigOptions.plugin.stylesheet)
+  const useTailwind =
+    namedOptionsParseResult.tw ??
+    outerdueConfigOptions.plugin.stylesheet.tailwind
 
-  return { pluginBasenames, minifyOutput }
+  return { pluginBasenames, minifyOutput, parseStyleSheet, useTailwind }
 })()
 
 const getRollupTSPlugin = () =>
@@ -103,13 +112,19 @@ const getPluginSrcString = async (basename: string) => {
 
 const getPluginStyles = async (basename: string, srcString: string) => {
   const { PLUGINS_PATH, PLUGINS_TAILWIND_CONFIG_PATH } = await PATH_CONFIGS
-  const tailwindConfigImport = (await import(
-    pathToFileURL(PLUGINS_TAILWIND_CONFIG_PATH).href
-  )) as { default: Readonly<TailwindConfig> }
+  const { useTailwind, minifyOutput } = await BUILD_OPTIONS
 
-  const tailwindConfig = {
-    ...tailwindConfigImport.default,
-    content: [{ raw: srcString }]
+  let tailwindConfig: TailwindConfig = { content: [] }
+
+  if (useTailwind) {
+    const tailwindConfigImport = (await import(
+      pathToFileURL(PLUGINS_TAILWIND_CONFIG_PATH).href
+    )) as { default: Readonly<TailwindConfig> }
+
+    tailwindConfig = {
+      ...tailwindConfigImport.default,
+      content: [{ raw: srcString }]
+    }
   }
 
   const styleSheetPath = path.join(
@@ -117,14 +132,13 @@ const getPluginStyles = async (basename: string, srcString: string) => {
     basename,
     PLUGIN_FILE_CONVENTIONS.STYLE_SHEET
   )
-  const pluginStyleSheet = fs.readFileSync(styleSheetPath, "utf-8")
+  const stylesheetContent = fs.readFileSync(styleSheetPath, "utf-8")
 
   let { css } = await postcss([
     atImport(),
-    tailwindcss(tailwindConfig)
-  ]).process(pluginStyleSheet, { from: styleSheetPath })
+    ...(useTailwind ? [tailwindcss(tailwindConfig)] : [])
+  ]).process(stylesheetContent, { from: styleSheetPath })
 
-  const { minifyOutput } = await BUILD_OPTIONS
   if (minifyOutput) css = new CleanCSS().minify(css).styles
 
   return css
@@ -173,7 +187,7 @@ const writePluginToFile = async (basename: string, src: string) => {
   await fs.promises.writeFile(filePathToWrite, src)
 }
 
-const finalizePluginSrc = async (srcString: string) => {
+const minifyOrPrettifyPluginSrc = async (srcString: string) => {
   const { minifyOutput } = await BUILD_OPTIONS
 
   if (!minifyOutput) {
@@ -191,11 +205,15 @@ const finalizePluginSrc = async (srcString: string) => {
 const buildPlugin = async (basename: string) => {
   // eslint-disable-next-line no-console
   console.log("Building plugin:", basename)
-  const srcString = await getPluginSrcString(basename)
-  const styleSheet = await getPluginStyles(basename, srcString)
+  const { parseStyleSheet } = await BUILD_OPTIONS
+  let srcString = await getPluginSrcString(basename)
 
-  const srcWithStyleSheet = insertOutputStyleSheet(srcString, styleSheet)
-  const finalSource = await finalizePluginSrc(srcWithStyleSheet)
+  if (parseStyleSheet) {
+    const styleSheet = await getPluginStyles(basename, srcString)
+    srcString = insertOutputStyleSheet(srcString, styleSheet)
+  }
+
+  const finalSource = await minifyOrPrettifyPluginSrc(srcString)
   await writePluginToFile(basename, finalSource)
 }
 

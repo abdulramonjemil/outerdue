@@ -6,19 +6,21 @@ type ConstructorParameters<T> =
 
 const css = String.raw
 
-// The whole `@import ...` in the css below is meant to be used as a
-// placeholder, and will be replaced with the actual output of tailwindcss.
+// The comment below will be replaced with the actual output of postcss.
 const STYLE_SHEET = css`
-  @import url("__STYLES_PLACEHOLDER_FOR_TAILWINDCSS_OUTPUT__");
+  /* __STYLES_PLACEHOLDER_FOR_STYLESHEET_OUTPUT__ */
 `
 
 /**
  * Raw string is included in the name to signify that the replacement string
- * should be a raw string too valid in template tagged `String.raw`
+ * should be a raw string too valid in template tagged `String.raw`.
+ *
+ * The pattern below matches the comment and accounts for spaces that might be
+ * added automatically by formatter (since `css` effectively means letting the
+ * formatter treat the string as css source.)
  */
 export const RAW_STRING_STYLE_SHEET_PLACEHOLDER =
-  // eslint-disable-next-line quotes
-  '@import url("__STYLES_PLACEHOLDER_FOR_TAILWINDCSS_OUTPUT__");'
+  "/* __STYLES_PLACEHOLDER_FOR_STYLESHEET_OUTPUT__ */"
 
 export class PluginCSSStyleSheet extends CSSStyleSheet {
   constructor(...args: ConstructorParameters<typeof CSSStyleSheet>) {

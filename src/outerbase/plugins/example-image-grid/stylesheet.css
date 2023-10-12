@@ -1,3 +1,7 @@
+.__foo__ {
+  color: transparent;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
