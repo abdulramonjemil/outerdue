@@ -180,7 +180,7 @@ export const parseCommandCLINamedOptions = <
   OptionsConfig extends CommandCLINamedOptionsConfig
 >({
   command,
-  skipUnnamedOptions,
+  noUnnamedOptions,
   options
 }: {
   /**
@@ -188,7 +188,7 @@ export const parseCommandCLINamedOptions = <
    * parsing options.
    */
   command: string
-  skipUnnamedOptions: boolean
+  noUnnamedOptions: boolean
   options: OptionsConfig
 }): CLIOptionsValues<OptionsConfig> => {
   const entries = Object.entries(options)
@@ -226,9 +226,9 @@ export const parseCommandCLINamedOptions = <
     }
   }
 
-  const offset = skipUnnamedOptions
-    ? getCommandCLINamedOptionsArgvOffset(command)
-    : getCommandCLIArgsArgvOffset(command)
+  const offset = noUnnamedOptions
+    ? getCommandCLIArgsArgvOffset(command)
+    : getCommandCLINamedOptionsArgvOffset(command)
   const args = process.argv.slice(offset)
   const cliOptions: Record<
     string,
