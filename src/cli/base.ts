@@ -168,19 +168,27 @@ export const getPassedSubcommand = (command: string) => {
   return potentialSubcommad
 }
 
-export type CLICommandNamedOptionsConfig = Record<string, CLINamedOptionConfig>
+export type CommandCLINamedOptionsConfig = Record<string, CLINamedOptionConfig>
+
+export const defineCommandCLINamedOptions = <
+  OptionsConfig extends CommandCLINamedOptionsConfig
+>(
+  config: OptionsConfig
+) => config
 
 export const parseCommandCLINamedOptions = <
-  OptionsConfig extends CLICommandNamedOptionsConfig
+  OptionsConfig extends CommandCLINamedOptionsConfig
 >({
-  offset,
+  command,
+  skipUnnamedOptions,
   options
 }: {
   /**
    * The amount of items to be removed from the start of `process.argv` before
    * parsing options.
    */
-  offset: number
+  command: string
+  skipUnnamedOptions: boolean
   options: OptionsConfig
 }): CLIOptionsValues<OptionsConfig> => {
   const entries = Object.entries(options)
@@ -218,6 +226,9 @@ export const parseCommandCLINamedOptions = <
     }
   }
 
+  const offset = skipUnnamedOptions
+    ? getCommandCLINamedOptionsArgvOffset(command)
+    : getCommandCLIArgsArgvOffset(command)
   const args = process.argv.slice(offset)
   const cliOptions: Record<
     string,
