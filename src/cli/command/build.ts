@@ -16,7 +16,12 @@ import { rimraf } from "rimraf"
 import { fileURLToPath } from "url"
 
 import type { CommandDef, RawSQLNodeHandlerDefiner } from "@/system/command"
-import { getSharedConstants, createErrorLogger, logMajorInfo } from "@/cli/base"
+import {
+  getSharedConstants,
+  createErrorLogger,
+  logMajorInfo,
+  getCommandCLIUnnamedOptions
+} from "@/cli/base"
 
 import { SQLNodeProxyDefiner } from "./base/proxy"
 import type * as ProxyModule from "./base/proxy"
@@ -96,15 +101,11 @@ const getRollupTSPlugin = () =>
     }
   })
 
+const COMMAND_BUILD_COMMAND_CLI_INPUT = "outerdue command build"
+
 const BUILD_OPTIONS = (() => {
   const options = process.argv.slice(2)
-
-  const basenames = options
-    .filter((arg) => arg.startsWith("--cmd=") || arg.startsWith("--command="))
-    .map((arg) =>
-      arg.substring((arg.startsWith("--cmd=") ? "--cmd=" : "--command=").length)
-    )
-
+  const basenames = getCommandCLIUnnamedOptions(COMMAND_BUILD_COMMAND_CLI_INPUT)
   const minifyOutput = options.includes("--minify")
 
   return { commandBasenames: basenames, minifyOutput }
@@ -498,15 +499,7 @@ const RunOuterdueCommandBuildProcess = async () => {
   const { commandBasenames } = buildOptions
 
   if (commandBasenames.length === 0) {
-    throw new Error(
-      [
-        "No commands to process",
-        "You might be using the wrong syntax.",
-        "The syntax is `--cmd=image-grid` or `--command=image-grid` (to process a command in the `image-grid` folder)",
-        "Remember to use `--` as in `-- --cmd=image-grid` if using an npm script",
-        "You may also need to pass multiple `--` if calling this script from nested npm script"
-      ].join("\n")
-    )
+    throw new Error("Please specify IDs of commands to process")
   }
 
   await Promise.all(

@@ -12,7 +12,12 @@ import CleanCSS from "clean-css"
 import { format } from "prettier"
 import { minify } from "terser"
 import { RAW_STRING_STYLE_SHEET_PLACEHOLDER } from "@/system/plugin"
-import { getSharedConstants, createErrorLogger, logMajorInfo } from "@/cli/base"
+import {
+  getSharedConstants,
+  createErrorLogger,
+  logMajorInfo,
+  getCommandCLIUnnamedOptions
+} from "@/cli/base"
 import commonjs from "@rollup/plugin-commonjs"
 
 const PATH_CONFIGS = (async () => {
@@ -33,11 +38,13 @@ const PLUGIN_FILE_CONVENTIONS = {
   STYLE_SHEET: "stylesheet.css"
 } as const
 
+const PLUGIN_BUILD_COMMAND_CLI_INPUT = "outerdue plugin build"
+
 const BUILD_OPTIONS = (() => {
   const options = process.argv.slice(2)
-  const pluginBasenames = options
-    .filter((arg) => arg.startsWith("--plugin="))
-    .map((arg) => arg.substring("--plugin=".length))
+  const pluginBasenames = getCommandCLIUnnamedOptions(
+    PLUGIN_BUILD_COMMAND_CLI_INPUT
+  )
 
   const minifyOutput = options.includes("--minify")
   return { pluginBasenames, minifyOutput }
@@ -181,15 +188,7 @@ const RunOuterduePluginBuildProcess = async () => {
   const { pluginBasenames } = BUILD_OPTIONS
 
   if (pluginBasenames.length === 0) {
-    throw new Error(
-      [
-        "No plugins to process",
-        "You might be using the wrong syntax.",
-        "The syntax is `--plugin=image-grid` (to process a plugin in the `image-grid` folder)",
-        "Remember to use `--` as in `-- --plugin=image-grid` if using an npm script",
-        "You may also need to pass multiple `--` if calling this script from nested npm script"
-      ].join("\n")
-    )
+    throw new Error("Please specify basenames of plugins to process")
   }
 
   await Promise.all(pluginBasenames.map((basename) => buildPlugin(basename)))
