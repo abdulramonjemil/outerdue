@@ -20,7 +20,10 @@ import {
   getSharedConstants,
   createErrorLogger,
   logMajorInfo,
-  getCommandCLIUnnamedOptions
+  getCommandCLIUnnamedOptions,
+  defineCommandCLINamedOptions,
+  parseCommandCLINamedOptions,
+  getOuterdueConfigOptions
 } from "@/cli/base"
 
 import { SQLNodeProxyDefiner } from "./base/proxy"
@@ -102,11 +105,22 @@ const getRollupTSPlugin = () =>
   })
 
 const COMMAND_BUILD_COMMAND_CLI_INPUT = "outerdue command build"
+const CommandBuildCommandNamedOptions = defineCommandCLINamedOptions({
+  minify: { type: "boolean", required: false, short: "m" }
+})
 
-const BUILD_OPTIONS = (() => {
-  const options = process.argv.slice(2)
+const BUILD_OPTIONS = (async () => {
   const basenames = getCommandCLIUnnamedOptions(COMMAND_BUILD_COMMAND_CLI_INPUT)
-  const minifyOutput = options.includes("--minify")
+
+  const outerdueConfigOptions = await getOuterdueConfigOptions()
+  const namedOptionsParseResult = parseCommandCLINamedOptions({
+    options: CommandBuildCommandNamedOptions,
+    noUnnamedOptions: false,
+    command: COMMAND_BUILD_COMMAND_CLI_INPUT
+  })
+
+  const minifyOutput =
+    namedOptionsParseResult.minify ?? outerdueConfigOptions.command.minify
 
   return { commandBasenames: basenames, minifyOutput }
 })()
@@ -237,7 +251,7 @@ const getJSNodeSrcString = async ({
     ]
   })
 
-  const { minifyOutput } = BUILD_OPTIONS
+  const { minifyOutput } = await BUILD_OPTIONS
 
   const code = await bundle
     .generate({
@@ -277,12 +291,15 @@ const getJSNodeSrcString = async ({
 const nodeNameToResultAccessorName = (name: string) =>
   name.toLowerCase().replace(/ /g, "-")
 
-const getNodeFileName = (commandDefinition: CommandDef, nodeIndex: number) => {
+const getNodeFileName = async (
+  commandDefinition: CommandDef,
+  nodeIndex: number
+) => {
   const filenamePrefix = `node-${nodeIndex + 1}`
   const { name, type } = commandDefinition.nodes[nodeIndex]
   const nodeNamePart = nodeNameToResultAccessorName(name)
 
-  const { minifyOutput } = BUILD_OPTIONS
+  const { minifyOutput } = await BUILD_OPTIONS
   const filename = `${filenamePrefix}.${nodeNamePart}.${
     minifyOutput && type === "js" ? "min.js" : type
   }`
@@ -302,7 +319,7 @@ const writeNodeToFile = async ({
   srcString: string
 }) => {
   const { COMMANDS_OUTPUT_PATH } = await PATH_CONFIGS
-  const filename = getNodeFileName(commandDefinition, nodeIndex)
+  const filename = await getNodeFileName(commandDefinition, nodeIndex)
 
   const outputDir = path.join(COMMANDS_OUTPUT_PATH, commandBasename)
   const filePathToWrite = path.join(outputDir, filename)
@@ -433,11 +450,13 @@ const writeNodeConfigToFile = async (
     namespace: commandDefinition.namespace,
     path: commandDefinition.path,
     id: commandDefinition.id,
-    nodes: commandDefinition.nodes.map((node, index) => ({
-      type: node.type,
-      name: node.name,
-      file: getNodeFileName(commandDefinition, index)
-    }))
+    nodes: await Promise.all(
+      commandDefinition.nodes.map(async (node, index) => ({
+        type: node.type,
+        name: node.name,
+        file: await getNodeFileName(commandDefinition, index)
+      }))
+    )
   }
 
   await fs.promises.mkdir(outputDir, { recursive: true })
@@ -495,7 +514,7 @@ const buildCommand = async (basename: string, envConfig: EnvConfig) => {
 
 const RunOuterdueCommandBuildProcess = async () => {
   const commandEnv = await loadCommandsEnv()
-  const buildOptions = BUILD_OPTIONS
+  const buildOptions = await BUILD_OPTIONS
   const { commandBasenames } = buildOptions
 
   if (commandBasenames.length === 0) {

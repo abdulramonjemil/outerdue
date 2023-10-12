@@ -16,7 +16,10 @@ import {
   getSharedConstants,
   createErrorLogger,
   logMajorInfo,
-  getCommandCLIUnnamedOptions
+  getCommandCLIUnnamedOptions,
+  defineCommandCLINamedOptions,
+  getOuterdueConfigOptions,
+  parseCommandCLINamedOptions
 } from "@/cli/base"
 import commonjs from "@rollup/plugin-commonjs"
 
@@ -39,14 +42,25 @@ const PLUGIN_FILE_CONVENTIONS = {
 } as const
 
 const PLUGIN_BUILD_COMMAND_CLI_INPUT = "outerdue plugin build"
+const PluginBuildCommandNamedOptions = defineCommandCLINamedOptions({
+  minify: { type: "boolean", required: false, short: "m" }
+})
 
-const BUILD_OPTIONS = (() => {
-  const options = process.argv.slice(2)
+const BUILD_OPTIONS = (async () => {
   const pluginBasenames = getCommandCLIUnnamedOptions(
     PLUGIN_BUILD_COMMAND_CLI_INPUT
   )
 
-  const minifyOutput = options.includes("--minify")
+  const outerdueConfigOptions = await getOuterdueConfigOptions()
+  const namedOptionsParseResult = parseCommandCLINamedOptions({
+    options: PluginBuildCommandNamedOptions,
+    noUnnamedOptions: false,
+    command: PLUGIN_BUILD_COMMAND_CLI_INPUT
+  })
+
+  const minifyOutput =
+    namedOptionsParseResult.minify ?? outerdueConfigOptions.plugin.minify
+
   return { pluginBasenames, minifyOutput }
 })()
 
@@ -109,7 +123,7 @@ const getPluginStyles = async (basename: string, srcString: string) => {
     { from: styleSheetPath }
   )
 
-  const { minifyOutput } = BUILD_OPTIONS
+  const { minifyOutput } = await BUILD_OPTIONS
   if (minifyOutput) css = new CleanCSS().minify(css).styles
 
   return css
@@ -145,7 +159,7 @@ const insertOutputStyleSheet = (pluginSrc: string, styleSheet: string) => {
 }
 
 const writePluginToFile = async (basename: string, src: string) => {
-  const { minifyOutput } = BUILD_OPTIONS
+  const { minifyOutput } = await BUILD_OPTIONS
   const outputFileExtension = minifyOutput ? ".bundle.min.js" : ".bundle.js"
 
   const { PLUGINS_OUTPUT_DIR } = await PATH_CONFIGS
@@ -159,7 +173,7 @@ const writePluginToFile = async (basename: string, src: string) => {
 }
 
 const finalizePluginSrc = async (srcString: string) => {
-  const { minifyOutput } = BUILD_OPTIONS
+  const { minifyOutput } = await BUILD_OPTIONS
 
   if (!minifyOutput) {
     const prettifiedSource = await format(srcString, {
@@ -185,7 +199,7 @@ const buildPlugin = async (basename: string) => {
 }
 
 const RunOuterduePluginBuildProcess = async () => {
-  const { pluginBasenames } = BUILD_OPTIONS
+  const { pluginBasenames } = await BUILD_OPTIONS
 
   if (pluginBasenames.length === 0) {
     throw new Error("Please specify basenames of plugins to process")
