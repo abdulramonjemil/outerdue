@@ -132,11 +132,28 @@ const getCommandCLIArgsArgvOffset = (command: string) => {
   return command.split(/ +/).length + ARGV_PROCESS_METADATA_LENGTH - 1
 }
 
-const getCommandCLIArgs = (command: string) =>
+const getCommandCLINamedOptionsArgvOffset = (command: string) => {
+  const commandArgsArgvOffset = getCommandCLIArgsArgvOffset(command)
+
+  const firstSetterOptionIndex = process.argv
+    .slice(commandArgsArgvOffset)
+    .findIndex((option) => isSetterCLIOption(option))
+
+  if (firstSetterOptionIndex === -1) return process.argv.length
+  return firstSetterOptionIndex + commandArgsArgvOffset
+}
+
+export const getCommandCLIUnnamedOptions = (command: string) => {
+  const startIndex = getCommandCLIArgsArgvOffset(command)
+  const endIndex = getCommandCLINamedOptionsArgvOffset(command)
+  return process.argv.slice(startIndex, endIndex)
+}
+
+const getCommandRawCLIArgs = (command: string) =>
   process.argv.slice(getCommandCLIArgsArgvOffset(command))
 
 export const getPassedSubcommand = (command: string) => {
-  const potentialSubcommad = getCommandCLIArgs(command)[0]
+  const potentialSubcommad = getCommandRawCLIArgs(command)[0]
   if (
     !potentialSubcommad ||
     isSetterCLIOption(potentialSubcommad) ||
@@ -147,17 +164,19 @@ export const getPassedSubcommand = (command: string) => {
   return potentialSubcommad
 }
 
-export const getCommandCLIOptions = <
-  OptionsConfig extends Record<string, CLIOptionConfig>
+export type CommandOptionsConfig = Record<string, CLIOptionConfig>
+
+export const parseCommandCLINamedOptions = <
+  OptionsConfig extends CommandOptionsConfig
 >({
-  offset = 2,
+  offset,
   options
 }: {
   /**
    * The amount of items to be removed from the start of `process.argv` before
    * parsing options.
    */
-  offset?: number
+  offset: number
   options: OptionsConfig
 }): CLIOptionsValues<OptionsConfig> => {
   const entries = Object.entries(options)
