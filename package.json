@@ -6,16 +6,20 @@
   "bin": {
     "outerdue": "dist/cli/index.js"
   },
+  "files": [
+    "dist/**/*",
+    "types/**/*"
+  ],
   "exports": {
     "./command": {
+      "types": "./types/system/command/index.d.ts",
       "import": "./dist/system/esm/command.js",
-      "require": "./dist/system/cjs/command.js",
-      "types": "./types/system/command/index.d.ts"
+      "require": "./dist/system/cjs/command.js"
     },
     "./plugin": {
+      "types": "./types/system/plugin/index.d.ts",
       "import": "./dist/system/esm/plugin.js",
-      "require": "./dist/system/cjs/plugin.js",
-      "types": "./types/system/plugin/index.d.ts"
+      "require": "./dist/system/cjs/plugin.js"
     }
   },
   "scripts": {
