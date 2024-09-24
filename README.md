@@ -1,13 +1,18 @@
-## Outerbase DUE
+# Outerbase DUE
 
-This is a project meant to be used as a reference when working with Outerbase.
-It depicts a solid system for creating, using, and referencing commands within a
-project. The full explanation of things going on here will be linked later in an
-article.
+This project serves as a reference for working with Outerbase, showcasing a
+robust system for defining, using, and referencing commands within a project. A
+detailed explanation of the concepts and implementation will be provided in a
+future article.
 
-## Why the name
+## Why "DUE"?
 
-`DUE` in `Outerbase DUE` stands for `Define, Use, Export`. This system is named
-so because of the way it encourages users to build apps using Outerbase. Where
-things are first defined in the codebase, used as a part of the project, and
-then exported to be used directly on the Outerbase platform.
+`DUE` stands for **Define, Use, Export**, which reflects the recommended
+workflow when building apps with Outerbase:
+
+- **Define** components within the codebase.
+- **Use** these components as part of your project.
+- **Export** them for direct use on the Outerbase platform.
+
+This structure promotes clarity, reusability, and a smooth integration with
+Outerbase.
